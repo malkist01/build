@@ -9,11 +9,11 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/malkist01/mid_16'
+          default: 'https://github.com/Jabiyeff-Project/device-santoni'
           required: true
       branch:
           description: 'Kernel source branch'
-          default: '16'
+          default: '11.0'
           required: true
       token:
           description: 'Telegram bot token'
