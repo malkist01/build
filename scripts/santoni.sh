@@ -8,8 +8,8 @@ chmod a+x Patch.sh
 ./Patch.sh
 bash Patch.sh
 
-# Add KernelSU
-curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/kpm/kernel/setup.sh" | bash -s kpm
+# Add SukiSU-Ultra
+curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 
 #add KSU Config
 echo "Adding CONFIG_KSU.."
