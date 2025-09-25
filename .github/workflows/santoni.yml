@@ -15,6 +15,11 @@ on:
           description: 'Kernel source branch'
           default: '11.0'
           required: true
+      kernel-config:
+        description: 'Kernel-config'
+        default: 'mido_defconfig'
+        required: true
+        type: string
       token:
           description: 'Telegram bot token'
           default: '7596553794:AAGoeg4VypmUfBqfUML5VWt5mjivN5-3ah8'
@@ -47,6 +52,7 @@ jobs:
 
       - name: Compiling
         run: |
+          echo "kernel-config: ${{ inputs.kernel-config }}"
           if [ "${DEVICE}" = "santoni" ]; then
             wget https://raw.githubusercontent.com/malkist01/build/main/scripts/santoni.sh
             bash santoni.sh
