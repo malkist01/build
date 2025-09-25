@@ -13,7 +13,6 @@ echo "CONFIG_LOCAL_VERSION=-Teletubies 🕊️" >> ./arch/arm64/configs/mido_def
 echo "# CONFIG_LOCAL_VERSION_AUTO is not set" >> ./arch/arm64/configs/mido_defconfig
 echo "CONFIG_LINUX_COMPILE_BY=malkist" >> ./arch/arm64/configs/mido_defconfig
 echo "CONFIG_LINUX_COMPILE_HOST=hp jadul" >> ./arch/arm64/configs/mido_defconfig
-echo "CONFIG_CC_STACKPROTECTOR_STRONG=n" >> ./arch/arm64/configs/mido_defconfig
 echo "Adding CONFIG_KSU.."
 echo "CONFIG_KSU=y" >> ./arch/arm64/configs/mido_defconfig
 echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm64/configs/mido_defconfig
