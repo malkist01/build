@@ -3,13 +3,15 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-git submodule add https://github.com/malkist01/patch
+
 curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/fs/patch.sh" | bash -s main
-apply patch -p1 < add.patch
+
 # Add KernelSU
 curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 #add KSU Config
+echo "Adding CONFIG_KSU.."
 echo "CONFIG_KSU=y" >> ./arch/arm64/configs/mido_defconfig
+echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm64/configs/mido_defconfig
 clang() {
     echo "Cloning clang"
     if [ ! -d "clang" ]; then
@@ -148,7 +150,7 @@ compile() {
 # Zipping
 zipping() {
     cd AnyKernel || exit 1
-    zip -r9 Kernel-"${BRANCH}"-"${CODENAME}"-"${DATE}".zip ./*
+    zip -r9 Teletubies-"${BRANCH}"-"${CODENAME}"-"${DATE}".zip ./*
     cd ..
 }
 
