@@ -9,7 +9,7 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/Jabiyeff-Project/device-santoni'
+          default: 'https://github.com/Jabiyeff-Project/kernel-santoni'
           required: true
       branch:
           description: 'Kernel source branch'
