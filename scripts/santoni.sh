@@ -4,9 +4,7 @@ rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
 
-chmod a+x Patch.sh
-./Patch.sh
-bash Patch.sh
+curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/fs/patch.sh" | bash -s main
 
 # Add SukiSU-Ultra
 curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
