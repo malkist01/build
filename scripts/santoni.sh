@@ -10,6 +10,7 @@ curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/fs/patch.sh" |
 curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 
 #add KSU Config
+echo "CONFIG_CC_STACKPROTECTOR_STRONG=n" >> ./arch/arm64/configs/santoni_treble_defconfig
 echo "Adding CONFIG_KSU.."
 echo "CONFIG_KSU=y" >> ./arch/arm64/configs/santoni_treble_defconfig
 echo "CONFIG_KSU_SUSFS=y" >> ./arch/arm64/configs/santoni_treble_defconfig
