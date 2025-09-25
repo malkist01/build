@@ -10,19 +10,14 @@ curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/fs/patch.sh" |
 curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 
 #add KSU Config
+echo "CONFIG_LOCAL_VERSION=-Teletubies 🕊️" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "# CONFIG_LOCAL_VERSION_AUTO is not set" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_LINUX_COMPILE_BY=malkist" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_LINUX_COMPILE_HOST=hp jadul" >> ./arch/arm64/configs/santoni_treble_defconfig
 echo "CONFIG_CC_STACKPROTECTOR_STRONG=n" >> ./arch/arm64/configs/santoni_treble_defconfig
 echo "Adding CONFIG_KSU.."
 echo "CONFIG_KSU=y" >> ./arch/arm64/configs/santoni_treble_defconfig
-echo "CONFIG_KSU_SUSFS=y" >> ./arch/arm64/configs/santoni_treble_defconfig
-echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> ./arch/arm64/configs/santoni_treble_defconfig
-echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> ./arch/arm64/configs/santoni_treble_defconfig
-echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> ./arch/arm64/configs/santoni_treble_defconfig
-echo "CONFIG_KSU_SUSFS_SUS_OVERLAYFS=y" >> ./arch/arm64/configs/santoni_treble_defconfig
-echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> ./arch/arm64/configs/santoni_treble_defconfig
-echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> ./arch/arm64/configs/santoni_treble_defconfig
-echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> ./arch/arm64/configs/santoni_treble_defconfig
-echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./arch/arm64/configs/santoni_treble_defconfig
-echo "CONFIG_KSU_SUSFS_SUS_SU=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm64/configs/santoni_treble_defconfig
 clang() {
     echo "Cloning clang"
     if [ ! -d "clang" ]; then
