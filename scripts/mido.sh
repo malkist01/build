@@ -4,7 +4,7 @@ rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
 curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/fs/patch.sh" | bash -s main
-git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b kernel-4.9 susfs4ksu
+git clone --depth=1 https://github.com/malkist01/patch
 chmod +× add.patch
 apply patch -p1 < add.patch
 # Add KernelSU
