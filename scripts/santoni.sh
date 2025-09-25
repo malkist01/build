@@ -11,17 +11,17 @@ curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kern
 
 #add KSU Config
 echo "Adding CONFIG_KSU.."
-echo "CONFIG_KSU=y" >> ./arch/arm64/configs/santoni_defconfig
-echo "CONFIG_KSU_SUSFS=y" >> ./arch/arm64/configs/santoni_defconfig
-echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> ./arch/arm64/configs/santoni_defconfig
-echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> ./arch/arm64/configs/santoni_defconfig
-echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> ./arch/arm64/configs/santoni_defconfig
-echo "CONFIG_KSU_SUSFS_SUS_OVERLAYFS=y" >> ./arch/arm64/configs/santoni_defconfig
-echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> ./arch/arm64/configs/santoni_defconfig
-echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> ./arch/arm64/configs/santoni_defconfig
-echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> ./arch/arm64/configs/santoni_defconfig
-echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./arch/arm64/configs/santoni_defconfig
-echo "CONFIG_KSU_SUSFS_SUS_SU=y" >> ./arch/arm64/configs/santoni_defconfig
+echo "CONFIG_KSU=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU_SUSFS=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU_SUSFS_SUS_PATH=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU_SUSFS_SUS_OVERLAYFS=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU_SUSFS_SUS_SU=y" >> ./arch/arm64/configs/santoni_treble_defconfig
 clang() {
     echo "Cloning clang"
     if [ ! -d "clang" ]; then
@@ -63,7 +63,7 @@ DEVICE="Xiaomi Redmi 4X"
 export DEVICE
 CODENAME="santoni"
 export CODENAME
-DEFCONFIG="santoni_defconfig"
+DEFCONFIG="santoni_treble_defconfig"
 export DEFCONFIG
 COMMIT_HASH=$(git rev-parse --short HEAD)
 export COMMIT_HASH
@@ -160,7 +160,7 @@ compile() {
 # Zipping
 zipping() {
     cd AnyKernel || exit 1
-    zip -r9 Kernel-"${BRANCH}"-"${CODENAME}"-"${DATE}".zip ./*
+    zip -r9 Teletubies-"${BRANCH}"-"${CODENAME}"-"${DATE}".zip ./*
     cd ..
 }
 
