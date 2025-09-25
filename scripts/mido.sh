@@ -4,8 +4,8 @@ rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
 git submodule add https://github.com/malkist01/patch
-apply patch -p1 < add.patch
 curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/fs/patch.sh" | bash -s main
+apply patch -p1 < add.patch
 # Add KernelSU
 curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 #add KSU Config
