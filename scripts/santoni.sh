@@ -7,14 +7,8 @@ cd kernel
 git clone --depth=1 https://github.com/malkist01/patch
 curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" | bash -s main
 
-git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b kernel-4.9 susfs4ksu
-cp susfs4ksu/kernel_patches/50_add_susfs_in_kernel-4.9.patch ./
-cp susfs4ksu/kernel_patches/fs/* ./fs
-cp susfs4ksu/kernel_patches/include/linux/* ./include/linux
-patch -p1 < 50_add_susfs_in_kernel-4.9.patch
-
 # Add SukiSU-Ultra
-curl -LSs "https://raw.githubusercontent.com/rsuntk/KernelSU/main/kernel/setup.sh" | bash -s main
+curl -LSs "https://raw.githubusercontent.com/WildKernels/Wild_KSU/wild/kernel/setup.sh" | bash -s wild
 
 #add KSU Config
 echo "CONFIG_KPROBES=y" >> ./arch/arm64/configs/santoni_defconfig
