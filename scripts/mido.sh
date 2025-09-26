@@ -9,6 +9,9 @@ curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" 
 # Add KernelSU
 curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 #add KSU Config
+echo "CONFIG_KPM=y" >> ./arch/arm64/configs/mido_defconfig
+echo "CONFIG_KALLSYMS=y" >> ./arch/arm64/configs/mido_defconfig
+echo "CONFIG_KALLSYMS_ALL=y" >> ./arch/arm64/configs/mido_defconfig
 echo "CONFIG_LOCAL_VERSION=-Teletubies 🕊️" >> ./arch/arm64/configs/mido_defconfig
 echo "# CONFIG_LOCAL_VERSION_AUTO is not set" >> ./arch/arm64/configs/mido_defconfig
 echo "CONFIG_LINUX_COMPILE_BY=malkist" >> ./arch/arm64/configs/mido_defconfig
