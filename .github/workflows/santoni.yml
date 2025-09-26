@@ -9,11 +9,11 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/malkist01/toni_4.9.git'
+          default: 'https://github.com/malkist01/toni.git'
           required: true
       branch:
           description: 'Kernel source branch'
-          default: 'rebase'
+          default: 'susfs'
           required: true
       kernel-config:
         description: 'Kernel-config'
