@@ -59,7 +59,7 @@ DEVICE="Xiaomi Redmi 4X"
 export DEVICE
 CODENAME="santoni"
 export CODENAME
-DEFCONFIG="santoni_treble_defconfig"
+DEFCONFIG="santoni_defconfig"
 export DEFCONFIG
 COMMIT_HASH=$(git rev-parse --short HEAD)
 export COMMIT_HASH
