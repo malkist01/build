@@ -6,6 +6,12 @@ cd kernel
 git clone --depth=1 https://github.com/malkist01/patch
 curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" | bash -s main
 
+git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b kernel-4.9 susfs4ksu
+           sudo cp susfs4ksu/kernel_patches/50_add_susfs_in_kernel-4.9.patch ./
+           sudo cp susfs4ksu/kernel_patches/fs/* ./fs
+           sudo cp susfs4ksu/kernel_patches/include/linux/* ./include/linux
+           sudo patch -p1 < 50_add_susfs_in_kernel-4.9.patch
+
 # Add SukiSU-Ultra
 curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 
@@ -19,6 +25,7 @@ echo "CONFIG_CC_STACKPROTECTOR_STRONG=n" >> ./arch/arm64/configs/santoni_defconf
 echo "Adding CONFIG_KSU.."
 echo "CONFIG_OVERLAY_FS=y" >> ./arch/arm64/configs/santoni_defconfig
 echo "CONFIG_KSU=y" >> ./arch/arm64/configs/santoni_defconfig
+echo "CONFIG_KSU_SUSFS=y" >> ./arch/arm64/configs/santoni_defconfig
 echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm64/configs/santoni_defconfig
 clang() {
     echo "Cloning clang"
