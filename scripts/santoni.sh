@@ -11,7 +11,7 @@ cp susfs4ksu/kernel_patches/include/linux/* ./include/linux
 patch -p1 < 50_add_susfs_in_kernel-4.9.patch
 
 # Add SukiSU-Ultra
-curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s susfs-test
+curl -LSs "https://raw.githubusercontent.com/rsuntk/KernelSU/KernelSU/main/kernel/setup.sh" | bash -s susfs
 
 #add KSU Config
 echo "CONFIG_KPROBES=y" >> ./arch/arm64/configs/santoni_defconfig
