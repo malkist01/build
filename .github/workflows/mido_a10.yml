@@ -1,4 +1,4 @@
-name: Kernel Build mido
+name: Kernel Build mido a10
 
 on:
   workflow_dispatch:
@@ -9,11 +9,11 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/malkist01/mid_16'
+          default: 'https://github.com/Nicklas373/kernel_xiaomi_msm8953-4.9'
           required: true
       branch:
           description: 'Kernel source branch'
-          default: '16'
+          default: 'lineage-17.1'
           required: true
       token:
           description: 'Telegram bot token'
