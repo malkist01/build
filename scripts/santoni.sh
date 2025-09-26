@@ -16,7 +16,7 @@ echo "CONFIG_LINUX_COMPILE_BY=malkist" >> ./arch/arm64/configs/santoni_defconfig
 echo "CONFIG_LINUX_COMPILE_HOST=hp jadul" >> ./arch/arm64/configs/santoni_defconfig
 echo "CONFIG_CC_STACKPROTECTOR_STRONG=n" >> ./arch/arm64/configs/santoni_defconfig
 echo "Adding CONFIG_KSU.."
-echo "CONFIG_KSU=y" >> ./arch/arm64/configs/santoni_treble_defconfig
+echo "CONFIG_KSU=y" >> ./arch/arm64/configs/santoni_defconfig
 echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm64/configs/santoni_defconfig
 clang() {
     echo "Cloning clang"
