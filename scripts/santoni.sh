@@ -10,6 +10,7 @@ curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" 
 curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 
 #add KSU Config
+echo "CONFIG_KPROBES=y" >> ./arch/arm64/configs/santoni_defconfig
 echo "CONFIG_LOCAL_VERSION=-Teletubies 🕊️" >> ./arch/arm64/configs/santoni_defconfig
 echo "# CONFIG_LOCAL_VERSION_AUTO is not set" >> ./arch/arm64/configs/santoni_defconfig
 echo "CONFIG_LINUX_COMPILE_BY=malkist" >> ./arch/arm64/configs/santoni_defconfig
