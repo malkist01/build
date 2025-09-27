@@ -1,192 +1,150 @@
-#!/bin/sh
-# Compile script for Compiling kernel
-# Copyright (c) Malkist
+#!/usr/bin/env bash
+
+# Dependencies
+rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-# Setup
-PHONE="mido"
-DEFCONFIG=mido_defconfig
-COMPILERDIR="$(pwd)/../aosp-clang"
-CLANG="AOSP Clang"
-CODENAME="[Dipsy]"
-ZIPNAME="Teletubies-$CODENAME-$PHONE-$(date '+%Y%m%d-%H%M').zip"
-CAPTION="Teletubies Kernel $PHONE Compile Complete, Have A Brick Day Nihahahah"
-BOT_TOKEN="7596553794:AAGoeg4VypmUfBqfUML5VWt5mjivN5-3ah8"
-CHAT_ID="-1002287610863"
-MESSAGE="• Build For $PHONE Started •"
-MESSAGE_ERROR="• Error Build For $PHONE Aborted •"
-kernel="out/arch/arm64/boot/Image.gz"
-export KBUILD_BUILD_USER=malkist
-export KBUILD_BUILD_HOST=android
 
-# Header
-cyan="\033[96m"
-green="\033[92m"
-red="\033[91m"
-blue="\033[94m"
-yellow="\033[93m"
+curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" | bash -s main
 
-echo -e "$cyan===========================\033[0m"
-echo -e "$cyan= START COMPILING KERNEL  =\033[0m"
-echo -e "$cyan===========================\033[0m"
+# Add KernelSU
+curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
+# add KSU Config
+echo "# CONFIG_KPM is not set" >> ./arch/arm64/configs/mido_defconfig
+echo "CONFIG_KALLSYMS=y" >> ./arch/arm64/configs/mido_defconfig
+echo "CONFIG_KALLSYMS_ALL=y" >> ./arch/arm64/configs/mido_defconfig
+echo "CONFIG_LOCAL_VERSION=-Teletubies 🕊️" >> ./arch/arm64/configs/mido_defconfig
+echo "# CONFIG_LOCAL_VERSION_AUTO is not set" >> ./arch/arm64/configs/mido_defconfig
+echo "CONFIG_LINUX_COMPILE_BY=malkist" >> ./arch/arm64/configs/mido_defconfig
+echo "CONFIG_LINUX_COMPILE_HOST=hp jadul" >> ./arch/arm64/configs/mido_defconfig
+echo "Adding CONFIG_KSU.."
+echo "CONFIG_KSU=y" >> ./arch/arm64/configs/mido_defconfig
+echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm64/configs/mido_defconfig
+clang() {
+    rm -rf clang
+    echo "Cloning clang"
+    if [ ! -d "clang" ]; then
+        git clone https://github.com/malkist01/clang-azure.git --depth=1 -b main clang
+        KBUILD_COMPILER_STRING="Azzure clang"
+        PATH="${PWD}/clang/bin:${PATH}"
+    fi
+    sudo apt install -y ccache
+    echo "Done"
+}
 
-echo -e "$blue...KSABAR...\033[0m"
-
-echo -e -ne "$green== (10%)\r"
-sleep 0.7
-echo -e -ne "$green=====                     (33%)\r"
-sleep 0.7
-echo -e -ne "$green=============             (66%)\r"
-sleep 0.7
-echo -e -ne "$green=======================   (100%)\r"
-echo -ne "\n"
-
-echo -e -n "$yellow\033[104mPRESS ENTER TO CONTINUE\033[0m"
-read P
-echo  $P
-
-# Clone WeebX Clang
-function clang() {
-if [ -d $COMPILERDIR ] ; then
-echo -e " "
-echo -e "\n$green[!] Lets's Build UwU...\033[0m \n"
-else
-echo -e " "
-echo -e "\n$red[!] AOSP-clang Dir Not Found!!!\033[0m \n"
-sleep 2
-echo -e "$green[+] Wait.. Cloning AOSP-clang...\033[0m \n"
-sleep 2
-wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r547379.tar.gz -O "aosp-clang.tar.gz"
-    rm -rf $COMPILERDIR 
-    mkdir $COMPILERDIR 
-    tar -xvf aosp-clang.tar.gz -C $COMPILERDIR
-    rm -rf aosp-clang.tar.gz
-sleep 1
-echo
-echo -e "\n$green[!] Lets's Build UwU...\033[0m \n"
-sleep 1
+IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
+DATE=$(date +"%Y%m%d-%H%M")
+START=$(date +"%s")
+KERNEL_DIR=$(pwd)
+CACHE=1
+export CACHE
+export KBUILD_COMPILER_STRING
+ARCH=arm64
+export ARCH
+KBUILD_BUILD_HOST="malkist"
+export KBUILD_BUILD_HOST
+KBUILD_BUILD_USER="android"
+export KBUILD_BUILD_USER
+DEVICE="Redmi Note 4"
+export DEVICE
+CODENAME="mido"
+export CODENAME
+DEFCONFIG="mido_defconfig"
+export DEFCONFIG
+KVERS="TinkyWinky"
+export KVERS
+COMMIT_HASH=$(git log --oneline --pretty=tformat:"%h  %s  [%an]" --abbrev-commit --abbrev=1 -1)
+export COMMIT_HASH
+PROCS=$(nproc --all)
+export PROCS
+STATUS=STABLE
+export STATUS
+source "${HOME}"/.bashrc && source "${HOME}"/.profile
+if [ $CACHE = 1 ]; then
+    ccache -M 100G
+    export USE_CCACHE=1
 fi
+LC_ALL=C
+export LC_ALL
+
+tg() {
+    curl -sX POST https://api.telegram.org/bot"${token}"/sendMessage -d chat_id="${chat_id}" -d parse_mode=Markdown -d disable_web_page_preview=true -d text="$1" &>/dev/null
 }
 
-# URL API Telegram untuk mengirim pesan
-URL="https://api.telegram.org/bot$BOT_TOKEN/sendMessage"
-
-# Data yang akan dikirimkan
-DATA="chat_id=$CHAT_ID&text=$MESSAGE"
-
-# Kirim permintaan POST ke API Telegram
-curl -s -X POST "$URL" -d "$DATA"
-
-function clean() {
-    echo -e "\n"
-    echo -e "$red[!] CLEANING UP \\033[0m"
-    echo -e "\n"
-    rm -rf log.txt
-    rm -rf out
-    make mrproper
+tgs() {
+    MD5=$(md5sum "$1" | cut -d' ' -f1)
+    curl -fsSL -X POST -F document=@"$1" https://api.telegram.org/bot"${token}"/sendDocument \
+        -F "chat_id=${chat_id}" \
+        -F "parse_mode=Markdown" \
+        -F "caption=$2 | *MD5*: \`$MD5\`"
 }
 
-# Make Defconfig
+# Send Build Info
+sendinfo() {
+    tg "
+• IMcompiler Action •
+*Building on*: \`Github actions\`
+*Date*: \`${DATE}\`
+*Device*: \`${DEVICE} (${CODENAME})\`
+*Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
+*Compiler*: \`${KBUILD_COMPILER_STRING}\`
+*Last Commit*: \`${COMMIT_HASH}\`
+*Build Status*: \`${STATUS}\`"
+}
 
-function build_kernel() {
-    export PATH="$COMPILERDIR/bin:$PATH"
-    make -j$(nproc --all) O=out ARCH=arm64 ${DEFCONFIG}
-    if [ $? -ne 0 ]
-then
-    echo -e "\n"
-    echo -e "$red [!] BUILD FAILED \033[0m"
-    echo -e "\n"
-else
-    echo -e "\n"
-    echo -e "$green==================================\033[0m"
-    echo -e "$green= [!] START BUILD ${DEFCONFIG}\033[0m"
-    echo -e "$green==================================\033[0m"
-    echo -e "\n"
-fi
+# Push kernel to channel
+push() {
+    cd AnyKernel || exit 1
+    ZIP=$(echo *.zip)
+    tgs "${ZIP}" "Build took $((DIFF / 60)) minute(s) and $((DIFF % 60)) second(s). | For *${DEVICE} (${CODENAME})* | ${KBUILD_COMPILER_STRING}"
+}
 
-# Speed up build process
-MAKE="./makeparallel"
+# Catch Error
+finderr() {
+    curl -s -X POST "https://api.telegram.org/bot$token/sendMessage" \
+        -d chat_id="$chat_id" \
+        -d "disable_web_page_preview=true" \
+        -d "parse_mode=markdown" \
+        -d sticker="CAACAgIAAxkBAAED3JViAplqY4fom_JEexpe31DcwVZ4ogAC1BAAAiHvsEs7bOVKQsl_OiME" \
+        -d text="Build throw an error(s)"
+    error_sticker
+    exit 1
+}
 
-# Build Start Here
+# Compile
+compile() {
 
-   make -j$(nproc --all) \
-    O=out \
-    ARCH=arm64 \
-    LLVM=1 \
-    LLVM_IAS=1 \
-    AR=llvm-ar \
-    NM=llvm-nm \
-    LD=ld.lld \
-    OBJCOPY=llvm-objcopy \
-    OBJDUMP=llvm-objdump \
-    STRIP=llvm-strip \
-    CC=clang \
-    CROSS_COMPILE=aarch64-linux-gnu- \
-    CROSS_COMPILE_ARM32=arm-linux-gnueabi- 2>&1 | tee log.txt
-    
-    # Zipping
-
-    if [ -f out/arch/arm64/boot/Image ] ; then
-            echo -e "$green=============================================\033[0m"
-            echo -e "$green= [+] Zipping up ...\033[0m"
-            echo -e "$green=============================================\033[0m"
-    if [ -d "$AK3_DIR" ]; then
-            cp -r $AK3_DIR AnyKernel3
-        elif ! git clone -q https://github.com/malkist01/anykernel3.git -b master; then
-                echo -e "\nAnyKernel3 repo not found locally and couldn't clone from GitHub! Aborting..."
-        fi
-            cp $kernel AnyKernel3
-            cd AnyKernel3
-            git checkout master &> /dev/null
-            zip -r9 "../$ZIPNAME" * -x .git README.md *placeholder
-            cd ..
-            rm -rf AnyKernel3
+    if [ -d "out" ]; then
+        rm -rf out && mkdir -p out
     fi
 
+    make O=out ARCH="${ARCH}" "${DEFCONFIG}"
+    make -j"${PROCS}" O=out \
+        ARCH=$ARCH \
+        CC="clang" \
+        LLVM=1 \
+        CROSS_COMPILE=aarch64-linux-gnu- \
+        CROSS_COMPILE_ARM32=arm-linux-gnueabi-
 
-    if [ -e "$ZIPNAME" ] ; then
-    echo -e "$green===========================\033[0m"
-    echo -e "$green=  SUCCESS COMPILE KERNEL \033[0m"
-    echo -e "$green=  Device     : $PHONE \033[0m"
-    echo -e "$green=  Defconfig  : $DEFCONFIG \033[0m"
-    echo -e "$green=  Toolchain  : $CLANG \033[0m"
-    echo -e "$green=  Codename   : $CODENAME \033[0m"
-    echo -e "$green=  Zipname    : $ZIPNAME \033[0m"
-    echo -e "$green=  Completed in $((SECONDS / 60)) minute(s) and $((SECONDS % 60)) second(s) \033[0m "
-    echo -e "$green=  Have A Brick Day Nihahahah \033[0m"
-    echo -e "$green===========================\033[0m"
-    else
-    echo -e "$red [!] FIX YOUR KERNEL SOURCE BRUH !?\033[0m"
-    send_log
+    if ! [ -a "$IMAGE" ]; then
+        finderr
+        exit 1
     fi
 
-    if [ -e "$ZIPNAME" ] ; then 
-    echo -e "$green=============================================\033[0m"
-    echo -e "$green= [+] Uploading ...\033[0m"
-    echo -e "$green=============================================\033[0m"
-
-    URL="https://api.telegram.org/bot$BOT_TOKEN/sendDocument"
-
-    curl -s -X POST "$URL" -F document=@"$ZIPNAME" -F caption="$CAPTION" -F chat_id="$CHAT_ID"
-
-    fi
-
+    git clone --depth=1 https://github.com/malkist01/AnyKernel3.git AnyKernel -b master
+    cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
+}
+# Zipping
+zipping() {
+    cd AnyKernel || exit 1
+    zip -r9 Teletubies-"${KVERS}"${CODENAME}"-"${DATE}".zip ./*
+    cd ..
 }
 
-# Fungsi untuk mengirim pesan dengan file
-function send_log() {
-    # File yang ingin dikirim
-    FILE="log.txt"
-
-    # URL untuk mengirim file dengan caption
-    URL="https://api.telegram.org/bot$BOT_TOKEN/sendDocument"
-
-    # Perintah curl untuk mengirim file
-    curl -F "chat_id=$CHAT_ID" -F "document=@${FILE}" -F "caption=${MESSAGE_ERROR}" $URL
-
-}
-
-# execute
 clang
-clean
-build_kernel
+sendinfo
+compile
+zipping
+END=$(date +"%s")
+DIFF=$((END - START))
+push
