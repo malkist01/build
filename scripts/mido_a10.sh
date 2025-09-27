@@ -31,8 +31,7 @@ clang() {
     echo "Done"
 }
 
-IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
-IMAGE2=$(pwd)/out/arch/arm64/boot/Image
+IMAGE=$(pwd)/out/arch/arm64/boot/Image
 DATE=$(date +"%Y%m%d-%H%M")
 START=$(date +"%s")
 KERNEL_DIR=$(pwd)
@@ -146,13 +145,12 @@ compile() {
         CROSS_COMPILE=aarch64-linux-gnu- \
         CROSS_COMPILE_ARM32=arm-linux-gnueabi-
 
-    if ! [ -a "$IMAGE" "$IMAGE2 ]; then
+    if ! [ -a "$IMAGE" ]; then
         finderr
         exit 1
     fi
 
     git clone --depth=1 https://github.com/malkist01/anykernel3.git AnyKernel -b master
-    cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
     cp out/arch/arm64/boot/Image AnyKernel
 }
 # Zipping
