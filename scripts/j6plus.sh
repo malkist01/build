@@ -17,7 +17,7 @@ echo "CONFIG_KSU=y" >> ./arch/arm/configs/j6primelte_defconfig
 echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm/configs/j6primelte_defconfig
 rm -rf KernelSU
 # Add KernelSU
-curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
+curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s next
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
