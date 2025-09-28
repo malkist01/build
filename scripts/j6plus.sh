@@ -2,6 +2,17 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
+#add KSU Config
+echo "# CONFIG_KPM is not set" >> ./arch/arm/configs/j6primelte_defconfig
+echo "CONFIG_KALLSYMS=y" >> ./arch/arm/configs/j6primelte_defconfig
+echo "CONFIG_KALLSYMS_ALL=y" >> ./arch/arm/configs/j6primelte_defconfig
+echo "CONFIG_LOCAL_VERSION=-Teletubies 🕊️" >> ./arch/arm/configs/j6primelte_defconfig
+echo "# CONFIG_LOCAL_VERSION_AUTO is not set" >> ./arch/arm/configs/j6primelte_defconfig
+echo "CONFIG_LINUX_COMPILE_BY=malkist" >> ./arch/arm/configs/j6primelte_defconfig
+echo "CONFIG_LINUX_COMPILE_HOST=hp jadul" >> ./arch/arm/configs/j6primelte_defconfig
+echo "Adding CONFIG_KSU.."
+echo "CONFIG_KSU=y" >> ./arch/arm/configs/j6primelte_defconfig
+echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm/configs/j6primelte_defconfig
 curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/fs/patch.sh" | bash -s main
 rm -rf KernelSU
 echo "Nuke previous toolchains"
