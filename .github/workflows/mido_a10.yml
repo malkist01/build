@@ -9,11 +9,11 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/malkist01/Kmid.git'
+          default: 'https://github.com/malkist01/M10.git'
           required: true
       branch:
           description: 'Kernel source branch'
-          default: 'normal-a'
+          default: '10'
           required: true
       token:
           description: 'Telegram bot token'
