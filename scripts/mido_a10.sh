@@ -53,6 +53,8 @@ DEFCONFIG="mido_defconfig"
 export DEFCONFIG
 KVERS="TinkyWinky"
 export KVERS
+AVERS="(10)"
+export AVERS
 COMMIT_HASH=$(git log --oneline --pretty=tformat:"%h  %s  [%an]" --abbrev-commit --abbrev=1 -1)
 export COMMIT_HASH
 PROCS=$(nproc --all)
@@ -137,7 +139,7 @@ compile() {
 # Zipping
 zipping() {
     cd AnyKernel || exit 1
-    zip -r9 Teletubies-"${KVERS}"-"${CODENAME}"-"${DATE}".zip ./*
+    zip -r9 Teletubies-"${KVERS}"-"${AVERS}"-"${CODENAME}"-"${DATE}".zip ./*
     cd ..
 }
 
