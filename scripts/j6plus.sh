@@ -5,6 +5,8 @@ cd kernel
 git clone --depth=1 https://github.com/malkist01/patch
 curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -
 #add KSU Config
+echo "# CONFIG_KSU_MANUAL_HOOK=°y" >> ./arch/arm/configs/j6primelte_defconfig
+echo "# CONFIG_OVERLAY_FS=y" >> ./arch/arm/configs/j6primelte_defconfig
 echo "# CONFIG_KPM is not set" >> ./arch/arm/configs/j6primelte_defconfig
 echo "CONFIG_KALLSYMS=y" >> ./arch/arm/configs/j6primelte_defconfig
 echo "CONFIG_KALLSYMS_ALL=y" >> ./arch/arm/configs/j6primelte_defconfig
