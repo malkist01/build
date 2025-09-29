@@ -20,7 +20,7 @@ rm -rf KernelSU
 git clone --depth=1 https://github.com/malkist01/patch
 git submodule add https://github.com/backslashxx/KernelSU
 git submodule init && git submodule update
-curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s nongki
+curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
