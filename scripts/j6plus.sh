@@ -18,9 +18,9 @@ echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm/configs/j6primelte_defconfig
 rm -rf KernelSU
 # Add KernelSU
 git clone --depth=1 https://github.com/malkist01/patch
-git submodule add https://github.com/malkist01/KernelSU
+git submodule add https://github.com/mlm-games/KernelSU-Non-GKI
 git submodule init && git submodule update
-curl -LSs "https://raw.githubusercontent.com/malkist01/KernelSU/master/kernel/setup.sh" | bash -s master
+curl -LSs "https://raw.githubusercontent.com/mlm-games/KernelSU-Non-GKI/main/kernel/setup.sh" | bash -s master
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
