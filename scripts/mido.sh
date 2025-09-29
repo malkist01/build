@@ -22,8 +22,10 @@ echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm64/configs/mido_defconfig
 clang() {
     echo "Cloning clang"
     if [ ! -d "clang" ]; then
-      wget  https://raw.githubusercontent.com/KaiFujiro/moonclang/main/moonclang_x86.tar.gz | tar xz -C clang
-        KBUILD_COMPILER_STRING="Moon-Clang"
+      mkdir -p "clang"
+      curl -Lo WeebX-Clang-20.0.0git.tar.gz "https://github.com/XSans0/WeebX-Clang/releases/download/WeebX-Clang-20.0.0git-release/WeebX-Clang-20.0.0git.tar.gz"
+      tar -zxf WeebX-Clang-20.0.0git.tar.gz -C "clang" --strip-components=1
+        KBUILD_COMPILER_STRING="WeebX-Clang"
         PATH="${PWD}/clang/bin:${PATH}"
     fi
     sudo apt install -y ccache
