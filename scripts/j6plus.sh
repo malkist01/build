@@ -2,6 +2,7 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
+git clone --depth=1 https://github.com/malkist01/patch
 #add KSU Config
 echo "# CONFIG_KSU_MANUAL_HOOK=°y" >> ./arch/arm/configs/j6primelte_defconfig
 echo "# CONFIG_OVERLAY_FS=y" >> ./arch/arm/configs/j6primelte_defconfig
@@ -17,7 +18,6 @@ echo "CONFIG_KSU=y" >> ./arch/arm/configs/j6primelte_defconfig
 echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm/configs/j6primelte_defconfig
 rm -rf KernelSU
 # Add KernelSU
-git clone --depth=1 https://github.com/malkist01/patch
 git submodule add https://github.com/mlm-games/KernelSU-Non-GKI
 git submodule init && git submodule update
 curl -LSs "https://raw.githubusercontent.com/mlm-games/KernelSU-Non-GKI/main/kernel/setup.sh" | bash -s main
