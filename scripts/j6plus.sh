@@ -3,9 +3,9 @@ rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
 git clone --depth=1 https://github.com/malkist01/patch
-git submodule add https://github.com/rifsxd/KernelSU-Next
+git submodule add https://github.com/backslashxx/SukiSU-Ultra
 git submodule init && git submodule update
-curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -
+curl -LSs "https://raw.githubusercontent.com/backslashxx/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 #add KSU Config
 echo "# CONFIG_KSU_MANUAL_HOOK=°y" >> ./arch/arm/configs/j6primelte_defconfig
 echo "# CONFIG_OVERLAY_FS=y" >> ./arch/arm/configs/j6primelte_defconfig
