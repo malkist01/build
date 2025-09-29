@@ -2,10 +2,6 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
-git clone --depth=1 https://github.com/malkist01/patch
-git submodule add https://github.com/backslashxx/SukiSU-Ultra
-git submodule init && git submodule update
-curl -LSs "https://raw.githubusercontent.com/backslashxx/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 #add KSU Config
 echo "# CONFIG_KSU_MANUAL_HOOK=°y" >> ./arch/arm/configs/j6primelte_defconfig
 echo "# CONFIG_OVERLAY_FS=y" >> ./arch/arm/configs/j6primelte_defconfig
@@ -21,7 +17,10 @@ echo "CONFIG_KSU=y" >> ./arch/arm/configs/j6primelte_defconfig
 echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm/configs/j6primelte_defconfig
 rm -rf KernelSU
 # Add KernelSU
-curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s next
+git clone --depth=1 https://github.com/malkist01/patch
+git submodule add https://github.com/backslashxx/SukiSU-Ultra
+git submodule init && git submodule update
+curl -LSs "https://raw.githubusercontent.com/backslashxx/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
