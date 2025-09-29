@@ -3,7 +3,7 @@ rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
 git clone --depth=1 https://github.com/malkist01/patch
-curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" | bash -s main
+curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -
 #add KSU Config
 echo "# CONFIG_KPM is not set" >> ./arch/arm/configs/j6primelte_defconfig
 echo "CONFIG_KALLSYMS=y" >> ./arch/arm/configs/j6primelte_defconfig
