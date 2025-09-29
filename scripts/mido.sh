@@ -22,9 +22,7 @@ echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm64/configs/mido_defconfig
 clang() {
     echo "Cloning clang"
     if [ ! -d "clang" ]; then
-      mkdir -p "clang"
-      curl -Lo moonclang_x86.tar.gz "https://media.githubusercontent.com/media/KaiFujiro/moonclang/refs/heads/main/moonclang_x86.tar.gz"
-      tar -zxf moonclang_x86.tar.gz -C "clang" --strip-components=1
+      wget  https://raw.githubusercontent.com/KaiFujiro/moonclang/main/moonclang_x86.tar.gz | tar xz -C clang
         KBUILD_COMPILER_STRING="Moon-Clang"
         PATH="${PWD}/clang/bin:${PATH}"
     fi
