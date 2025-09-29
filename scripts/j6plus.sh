@@ -20,7 +20,7 @@ rm -rf KernelSU
 git clone --depth=1 https://github.com/malkist01/patch
 git submodule add https://github.com/mlm-games/KernelSU-Non-GKI
 git submodule init && git submodule update
-curl -LSs "https://raw.githubusercontent.com/mlm-games/KernelSU-Non-GKI/main/kernel/setup.sh" | bash -s master
+curl -LSs "https://raw.githubusercontent.com/mlm-games/KernelSU-Non-GKI/main/kernel/setup.sh" | bash -s main
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
