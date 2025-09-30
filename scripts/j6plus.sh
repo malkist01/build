@@ -4,9 +4,9 @@ git clone $REPO -b $BRANCH kernel
 cd kernel
 rm -rf drivers/kernelsu
 # Add KernelSU
-git submodule add https://github.com/WildKernels/Wild_KSU
+git submodule add https://github.com/KernelSU-Next/KernelSU-Next
 git submodule init && git submodule update
-curl -LSs "https://raw.githubusercontent.com/WildKernels/Wild_KSU/wild/kernel/setup.sh" | bash -s wild
+curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s next
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
