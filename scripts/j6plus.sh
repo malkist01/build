@@ -2,7 +2,6 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
-rm -rf drivers/kernelsu
 # Add KernelSU
 git submodule add https://github.com/SukiSU-Ultra/SukiSU-Ultra
 git submodule init && git submodule update
