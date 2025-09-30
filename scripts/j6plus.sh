@@ -2,25 +2,6 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
-git clone --depth=1 https://github.com/malkist01/patch
-#add KSU Config
-echo "# CONFIG_KSU_MANUAL_HOOK=°y" >> ./arch/arm/configs/j6primelte_defconfig
-echo "# CONFIG_OVERLAY_FS=y" >> ./arch/arm/configs/j6primelte_defconfig
-echo "# CONFIG_KPM is not set" >> ./arch/arm/configs/j6primelte_defconfig
-echo "CONFIG_KALLSYMS=y" >> ./arch/arm/configs/j6primelte_defconfig
-echo "CONFIG_KALLSYMS_ALL=y" >> ./arch/arm/configs/j6primelte_defconfig
-echo "CONFIG_LOCAL_VERSION=-Teletubies 🕊️" >> ./arch/arm/configs/j6primelte_defconfig
-echo "# CONFIG_LOCAL_VERSION_AUTO is not set" >> ./arch/arm/configs/j6primelte_defconfig
-echo "CONFIG_LINUX_COMPILE_BY=malkist" >> ./arch/arm/configs/j6primelte_defconfig
-echo "CONFIG_LINUX_COMPILE_HOST=hp jadul" >> ./arch/arm/configs/j6primelte_defconfig
-echo "Adding CONFIG_KSU.."
-echo "CONFIG_KSU=y" >> ./arch/arm/configs/j6primelte_defconfig
-echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./arch/arm/configs/j6primelte_defconfig
-rm -rf KernelSU
-# Add KernelSU
-git submodule add https://github.com/mlm-games/KernelSU-Non-GKI
-git submodule init && git submodule update
-curl -LSs "https://raw.githubusercontent.com/mlm-games/KernelSU-Non-GKI/main/kernel/setup.sh" | bash -s main
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
