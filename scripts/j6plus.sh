@@ -3,9 +3,9 @@ rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
 # Add KernelSU
-git submodule add https://github.com/SukiSU-Ultra/SukiSU-Ultra
+git submodule add https://github.com/backslashxx/KernelSU
 git submodule init && git submodule update
-curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
+curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
