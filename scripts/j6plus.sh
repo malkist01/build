@@ -2,6 +2,7 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
+rm -rf drivers/kernelsu
 # Add KernelSU
 git submodule add https://github.com/WildKernels/Wild_KSU
 git submodule init && git submodule update
