@@ -4,8 +4,8 @@ git clone $REPO -b $BRANCH kernel
 cd kernel
 rm -rf drivers/kernelsu
 # Add KernelSU
-git submodule add https://github.com/SukiSU-Ultra/SukiSU-Ultra
-curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s main
+git submodule add https://github.com/malkist01/SukiSU-Ultra.git
+curl -LSs "https://raw.githubusercontent.com/malkist01/SukiSU-Ultra/nongki/kernel/setup.sh" | bash -s nogki
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
