@@ -2,7 +2,6 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
-rm -rf drivers/kernelsu
 # Add KernelSU
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
