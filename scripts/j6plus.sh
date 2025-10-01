@@ -2,6 +2,7 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
+git fetch https://gitlab.com/dts_project/kernel -t ultra && git cherry-pick c5b95ad1248761909a9d1891898b3cd35c377701 && git cherry-pick c5b95ad1248761909a9d1891898b3cd35c377701..229e94198375698866007e1dca6aff1821a80386
 # Add KernelSU
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
