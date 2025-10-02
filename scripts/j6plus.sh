@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 rm -rf kernel
+rm -rf kernelsu
 git clone $REPO -b $BRANCH kernel 
 cd kernel
 curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" | bash -s main
