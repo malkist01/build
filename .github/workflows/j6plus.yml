@@ -9,11 +9,11 @@ on:
           required: true
       repo:
           description: 'Kernel source link (dont include . git at the end)'
-          default: 'https://github.com/malkist01/Jenem.git'
+          default: 'https://github.com/malkist01/Testing-ajah.git'
           required: true
       branch:
           description: 'Kernel source branch'
-          default: 'ksu'
+          default: 'stable'
           required: true
       token:
           description: 'Telegram bot token'
