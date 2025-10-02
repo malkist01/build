@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 rm -rf kernel
-rm -rf kernelsu
 git clone $REPO -b $BRANCH kernel 
 cd kernel
+rm -rf drivers/kernelsu
 curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" | bash -s main
 curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s v1.0.8
 echo "Nuke previous toolchains"
