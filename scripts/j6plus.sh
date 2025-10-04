@@ -8,6 +8,7 @@ rm -rf toolchain out AnyKernel
 echo "cleaned up"
 echo "Cloning toolchain"
 git clone --depth=1 https://github.com/KudProject/arm-linux-androideabi-4.9.git -b master gcc32
+patch -p1 -F 3 < test.patch
 if [ "$is_test" = true ]; then
      echo "Its alpha test build"
      unset chat_id
