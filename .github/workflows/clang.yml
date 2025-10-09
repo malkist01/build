@@ -1,4 +1,4 @@
-name: j6plus arm ksu
+name: clang j6
 
 on:
   workflow_dispatch:
