@@ -162,7 +162,7 @@ compile() {
         exit 1
     fi
 
-    git clone --depth=1 https://github.com/malkist01/AnyKernel3.git AnyKernel -b master
+    git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
     cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
     cp out/arch/arm64/boot/dtbo.img AnyKernel    
 }
