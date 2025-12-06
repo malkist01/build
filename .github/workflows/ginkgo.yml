@@ -9,11 +9,11 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/malkist01/Gay.git'
+          default: 'https://github.com/malkist01/dipsy.git'
           required: true
       branch:
           description: 'Kernel source branch'
-          default: 'sixteen/main'
+          default: 'main'
           required: true
       token:
           description: 'Telegram bot token'
