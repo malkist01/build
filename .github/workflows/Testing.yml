@@ -2,6 +2,14 @@ name: build AOSP
 on:
   workflow_dispatch:
     inputs:
+      repo:
+          description: 'Kernel source'
+          default: 'https://github.com/MoeKernel/android_kernel_xiaomi_ginkgo.git'
+          required: true
+      branch:
+          description: 'Kernel source branch'
+          default: 'sixteen'
+          required: true    
       token:
           description: 'Telegram bot token'
           default: '7596553794:AAGoeg4VypmUfBqfUML5VWt5mjivN5-3ah8'
@@ -17,6 +25,9 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+     TZ: Asia/Jakarta
+     REPO: ${{ github.event.inputs.repo }}
+     BRANCH: ${{ github.event.inputs.branch }}
      token: ${{ github.event.inputs.token }}
      chat_id: ${{ github.event.inputs.chat_id }}
 
@@ -55,12 +66,12 @@ jobs:
             export KBUILD_BUILD_USER=user-tobrut
             export KBUILD_BUILD_HOST=exotic-host
             export KBUILD_COMPILER_STRING="$$CLANG_PATH/clang"
-            make O=out ARCH=arm64 sweet_defconfig 
+            make O=out ARCH=arm64 vendor/moe_defconfig 
             make -j$(nproc --all) O=out ARCH=arm64 LLVM=1 LLVM_IAS=1 CC=clang \
               CLANG_TRIPLE=$CLANG_PATH/aarch64-linux-gnu- \
               CROSS_COMPILE=$GCC64_PATH/bin/aarch64-elf- \
               CROSS_COMPILE_ARM32=$GCC32_PATH/bin/arm-eabi-         
-            mv out/.config out/sweet_defconfig.txt
+            mv out/.config out/moe_defconfig.txt
 
     - name: Upload configs
       uses: actions/upload-artifact@v4
