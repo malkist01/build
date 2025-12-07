@@ -1,9 +1,11 @@
+push
 #!/usr/bin/env bash
 
 # Dependencies
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
+rm -rf KernelSU
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -25,7 +27,7 @@ setup() {
 
   if ! [ -d "${ARCH_DIR}" ]; then
       echo "gcc not found! Cloning to ${ARCH_DIR}..."
-      if ! git clone --depth=1 -b lineage-19.1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git ${ARCH_DIR}; then
+      if ! git clone --depth=1 -b main https://github.com/greenforce-project/gcc-arm64 ${ARCH_DIR}; then
           echo "Cloning failed! Aborting..."
           exit 1
       fi
@@ -33,7 +35,7 @@ setup() {
 
   if ! [ -d "${ARM_DIR}" ]; then
       echo "gcc_32 not found! Cloning to ${ARM_DIR}..."
-      if ! git clone --depth=1 -b lineage-19.1 https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git ${ARM_DIR}; then
+      if ! git clone --depth=1 -b main https://github.com/greenforce-project/gcc-arm ${ARM_DIR}; then
           echo "Cloning failed! Aborting..."
           exit 1
       fi
@@ -52,10 +54,12 @@ setup() {
   fi
 }
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
-DTB=$(pwd)/out/arch/arm64/boot/dtbo.img
+DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
+DTB=$(pwd)/out/arch/arm64/boot/dtb
 DATE=$(date +"%Y%m%d-%H%M")
 START=$(date +"%s")
 KERNEL_DIR=$(pwd)
+export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 CACHE=1
 export CACHE
 export KBUILD_COMPILER_STRING
@@ -151,20 +155,21 @@ compile() {
        OBJDUMP="llvm-objdump" \
        STRIP="llvm-strip" \
        CLANG_TRIPLE="aarch64-linux-gnu-" \
-       CROSS_COMPILE="$ARCH_DIR/bin/aarch64-linux-android-" \
-       CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-linux-androideabi-" \
+       CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
+       CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
        dtbo.img \
        CC="${CCACHE} clang" \
 
-    if ! [ -f "${IMAGE}" && -f "${DTBO}"]; then
+    if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
         finderr
         exit 1
     fi
 
     git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
     cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
-    cp out/arch/arm64/boot/dtbo.img AnyKernel    
+    cp out/arch/arm64/boot/dtbo.img AnyKernel
+    cp out/arch/arm64/boot/dtb AnyKernel
 }
 # Zipping
 zipping() {
