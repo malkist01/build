@@ -6,10 +6,12 @@ on:
           description: 'Kernel source'
           default: 'https://github.com/MoeKernel/android_kernel_xiaomi_ginkgo.git'
           required: true
+          type: string
       branch:
           description: 'Kernel source branch'
           default: 'sixteen'
-          required: true    
+          required: true
+          type: string
       token:
           description: 'Telegram bot token'
           default: '7596553794:AAGoeg4VypmUfBqfUML5VWt5mjivN5-3ah8'
@@ -45,6 +47,11 @@ jobs:
             sudo apt update -y
             sudo apt install bc cpio flex bison aptitude git python-is-python3 tar aria2 perl wget curl lz4 -y
             sudo apt install libssl-dev -y
+
+    - name: Clone Kernel
+      run: |
+            mkdir kernel
+            git clone https://github.com/MoeKernel/android_kernel_xiaomi_ginkgo.git -b sixteen --depth=1 kernel            
 
     - name: Clone Toolchains
       run: |
