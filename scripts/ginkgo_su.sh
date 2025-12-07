@@ -159,7 +159,7 @@ compile() {
 # Zipping
 zipping() {
     cd AnyKernel || exit 1
-    zip -r9 Teletubies-"${CODENAME}"-${KVERS}"-"${DATE}".zip ./*
+    zip -r9 Teletubies-"${CODENAME}"-"${KVERS}"-"${DATE}".zip ./*
     cd ..
 }
 
