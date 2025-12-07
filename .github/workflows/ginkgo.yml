@@ -9,11 +9,11 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/MoeKernel/android_kernel_xiaomi_ginkgo.git'
+          default: 'https://github.com/malkist01/dipsy.git'
           required: true
       branch:
           description: 'Kernel source branch'
-          default: 'sixteen'
+          default: 'main'
           required: true
       token:
           description: 'Telegram bot token'
