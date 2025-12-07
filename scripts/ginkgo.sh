@@ -8,10 +8,11 @@ cd kernel
 rm -rf KernelSU
 git clone --depth=1 https://github.com/malkist01/patch
 curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" | bash -s main
-curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
+curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
 echo "CONFIG_KALLSYMS=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
 echo "CONFIG_KALLSYMS_ALL=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
 echo "CONFIG_KSU=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
+echo "CONFIG_KSU_MANUAL_HOOK=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
