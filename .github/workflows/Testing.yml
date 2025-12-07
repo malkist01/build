@@ -8,8 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_BOT_TOKEN: 7596553794:AAGoeg4VypmUfBqfUML5VWt5mjivN5-3ah8
+      TELEGRAM_CHAT_ID: -1002287610863
 
     steps:
     - name: Checkout Code
@@ -41,7 +41,6 @@ jobs:
 
     - name: Clone kernelSU-Next
       run: |
-            curl -LSs "https://raw.githubusercontent.com/Mr-Morat/KernelSU-Next/susfs/kernel/setup.sh" | bash -s susfs
 
     - name: Build Kernel
       run: |
