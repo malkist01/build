@@ -61,7 +61,7 @@ DEVICE="Redmi Note 8"
 export DEVICE
 CODENAME="ginkgo"
 export CODENAME
-KVERS="TinkyWinky"
+KVERS="normal"
 export KVERS
 AVERS="(10)"
 export AVERS
@@ -161,7 +161,7 @@ compile() {
 # Zipping
 zipping() {
     cd AnyKernel || exit 1
-    zip -r9 Teletubies-"${CODENAME}"-"${DATE}".zip ./*
+    zip -r9 Teletubies-"${CODENAME}"-"${KVERS}"-"${DATE}".zip ./*
     cd ..
 }
 
