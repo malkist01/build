@@ -5,14 +5,6 @@ push
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-rm -rf KernelSU
-git clone --depth=1 https://github.com/malkist01/patch
-curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" | bash -s main
-curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s nongki
-echo "CONFIG_KALLSYMS=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
-echo "CONFIG_KALLSYMS_ALL=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
-echo "CONFIG_KSU=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
-echo "CONFIG_KSU_MANUAL_HOOK=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -46,18 +38,6 @@ setup() {
           echo "Cloning failed! Aborting..."
           exit 1
       fi
-  fi
-
-  if [[ $1 = "-k" || $1 = "--ksu" ]]; then
-      echo -e "\nCleanup KernelSU first on local build\n"
-      rm -rf KernelSU drivers/kernelsu
-
-      echo -e "\nKSU Support, let's Make it On\n"
-      curl -kLSs "https://raw.githubusercontent.com/KazuyaProject/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs
-
-      sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/configs/ginkgo_defconfig
-  else
-      echo -e "\nKSU not Support, let's Skip\n"
   fi
 }
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
