@@ -1,7 +1,7 @@
 name: build AOSP
 on:
   workflow_dispatch:
-    inputs:[]
+    inputs:
       token:
           description: 'Telegram bot token'
           default: '7596553794:AAGoeg4VypmUfBqfUML5VWt5mjivN5-3ah8'
