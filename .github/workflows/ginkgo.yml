@@ -1,4 +1,4 @@
-name: Ginkgo
+name: Ginkgo Normal
 
 on:
   workflow_dispatch:
