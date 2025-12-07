@@ -17,8 +17,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-    token: ${{ github.event.inputs.token }}
-    chat_id: ${{ github.event.inputs.chat_id }}
+     token: ${{ github.event.inputs.token }}
+     chat_id: ${{ github.event.inputs.chat_id }}
 
     steps:
     - name: Checkout Code
