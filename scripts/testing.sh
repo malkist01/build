@@ -1,4 +1,3 @@
-push
 #!/usr/bin/env bash
 
 # Dependencies
@@ -130,7 +129,7 @@ compile() {
         rm -rf out && mkdir -p out
     fi
 
-    make O=out ARCH="${ARCH}" "${DEFCONFIG}" "${BASE_FRAGMENT}" "${FRAGMENT}"  && echo "sukisu.config
+    make O=out ARCH="${ARCH}" "${DEFCONFIG}" "${BASE_FRAGMENT}" "${FRAGMENT}"  && echo "sukisu.config"
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
        CC="clang" \
