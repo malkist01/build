@@ -53,7 +53,7 @@ export CACHE
 export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
-export DEFCONFIG="vendor/xiaomi-trinket.config"
+export DEFCONFIG="vendor/trinket-perf_defconfig"
 export ARCH="arm64"
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
