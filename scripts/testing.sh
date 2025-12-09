@@ -41,6 +41,7 @@ setup() {
 }
 GINKGO_FRAGMENT="vendor/ginkgo.config"
 FRAGMENT="$GINKGO_FRAGMENT"
+BASE_FRAGMENT="vendor/xiaomi-trinket.config"
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
 DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
 DTB=$(pwd)/out/arch/arm64/boot/dtb
