@@ -5,7 +5,6 @@ push
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-curl -LSs "https://raw.githubusercontent.com/KOWX712/KernelSU/master/kernel/setup.sh" | bash -s master
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
