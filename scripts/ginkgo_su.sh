@@ -1,133 +1,176 @@
+push
 #!/usr/bin/env bash
-#
+
 # Dependencies
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-SECONDS=0
-ZIPNAME="Teletubies-Ginkgo-$(TZ=Asia/Jakarta date +"%Y%m%d-%H%M").zip"
-TC_DIR="$(pwd)/../tc/"
-CLANG_DIR="${TC_DIR}clang"
-GCC_64_DIR="${TC_DIR}aarch64-linux-android-4.9"
-GCC_32_DIR="${TC_DIR}arm-linux-androideabi-4.9"
-AK3_DIR="$HOME/AnyKernel3"
-DEFCONFIG="vendor/ginkgo_defconfig"
+LOCAL_DIR="$(pwd)/.."
+TC_DIR="${LOCAL_DIR}/toolchain"
+CLANG_DIR="${TC_DIR}/clang"
+ARCH_DIR="${TC_DIR}/aarch64-linux-android-4.9"
+ARM_DIR="${TC_DIR}/arm-linux-androideabi-4.9"
+setup() {
+  if ! [ -d "${CLANG_DIR}" ]; then
+      echo "Clang not found! Downloading Google prebuilt..."
+      mkdir -p "${CLANG_DIR}"
+      wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/4d2864f08ff2c290563fb903a5156e0504620bbe/clang-r563880c.tar.gz -O clang.tar.gz
+      if [ $? -ne 0 ]; then
+          echo "Download failed! Aborting..."
+          exit 1
+      fi
+        echo "Extracting clang to ${CLANG_DIR}..."
+      tar -xf clang.tar.gz -C "${CLANG_DIR}"
+    rm -f clang.tar.gz
+  fi
 
-# ===== Set timezone =====
-sudo timedatectl set-timezone Asia/Jakarta
+  if ! [ -d "${ARCH_DIR}" ]; then
+      echo "gcc not found! Cloning to ${ARCH_DIR}..."
+      if ! git clone --depth=1 -b main https://github.com/greenforce-project/gcc-arm64 ${ARCH_DIR}; then
+          echo "Cloning failed! Aborting..."
+          exit 1
+      fi
+  fi
 
-# ===== TELEGRAM CONFIG =====
-BOT_TOKEN="7596553794:AAGoeg4VypmUfBqfUML5VWt5mjivN5-3ah8"
-CHAT_ID="-1002287610863"
-API_URL="https://api.telegram.org/bot${BOT_TOKEN}"
-
-tg_msg() {
-curl -s -X POST "${API_URL}/sendMessage" \
--d chat_id="${CHAT_ID}" \
--d text="$1" \
--d parse_mode=HTML > /dev/null
+  if ! [ -d "${ARM_DIR}" ]; then
+      echo "gcc_32 not found! Cloning to ${ARM_DIR}..."
+      if ! git clone --depth=1 -b main https://github.com/greenforce-project/gcc-arm ${ARM_DIR}; then
+          echo "Cloning failed! Aborting..."
+          exit 1
+      fi
+  fi
 }
-
-tg_file() {
-curl -s -X POST "${API_URL}/sendDocument" \
--F chat_id="${CHAT_ID}" \
--F document=@"$1" \
--F caption="$2" > /dev/null
-}
-
-# ===== ENV =====
-export PATH="$CLANG_DIR/bin:$PATH"
+IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
+DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
+DTB=$(pwd)/out/arch/arm64/boot/dtb
+DATE=$(date +"%Y%m%d-%H%M")
+START=$(date +"%s")
+KERNEL_DIR=$(pwd)
+export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
+CACHE=1
+export CACHE
+export KBUILD_COMPILER_STRING
+ARCH=arm64
+export ARCH
+export DEFCONFIG="vendor/ginkgo_defconfig"
+export ARCH="arm64"
+export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
 export KBUILD_BUILD_VERSION="1"
-export LOCALVERSION
+DEVICE="Redmi Note 8"
+export DEVICE
+CODENAME="ginkgo"
+export CODENAME
+KVERS="KSU"
+export AVERS
+COMMIT_HASH=$(git log --oneline --pretty=tformat:"%h  %s  [%an]" --abbrev-commit --abbrev=1 -1)
+export COMMIT_HASH
+PROCS=$(nproc --all)
+export PROCS
+STATUS=STABLE
+export STATUS
+source "${HOME}"/.bashrc && source "${HOME}"/.profile
+if [ $CACHE = 1 ]; then
+    ccache -M 100G
+    export USE_CCACHE=1
+fi
+LC_ALL=C
+export LC_ALL
 
-# ===== START NOTIF =====
-tg_msg "🚀 <b>Kernel Build Started</b>
-Device: <b>Redmi Note 8 (Ginkgo)</b>
-Time: <code>$(date)</code>"
-
-# ===== CLANG =====
-if ! [ -d "${CLANG_DIR}" ]; then
-tg_msg "⚙️ Cloning Clang..."
-      mkdir -p "${CLANG_DIR}"
-      curl -Lo WeebX-Clang-20.0.0git.tar.gz "https://github.com/XSans0/WeebX-Clang/releases/download/WeebX-Clang-20.0.0git-release/WeebX-Clang-20.0.0git.tar.gz"
-      tar -zxf WeebX-Clang-20.0.0git.tar.gz -C ${CLANG_DIR} || {
-tg_msg "❌ <b>Failed cloning Clang</b>"
+tg() {
+    curl -sX POST https://api.telegram.org/bot"${token}"/sendMessage -d chat_id="${chat_id}" -d parse_mode=Markdown -d disable_web_page_preview=true -d text="$1" &>/dev/null
 }
-fi
 
-# ===== GCC 64 =====
-if ! [ -d "${GCC_64_DIR}" ]; then
-tg_msg "⚙️ Cloning GCC 64..."
-git clone --depth=1 -b lineage-19.1 \
-https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git \
-${GCC_64_DIR} || {
-tg_msg "❌ <b>Failed cloning GCC 64</b>"
+tgs() {
+    MD5=$(md5sum "$1" | cut -d' ' -f1)
+    curl -fsSL -X POST -F document=@"$1" https://api.telegram.org/bot"${token}"/sendDocument \
+        -F "chat_id=${chat_id}" \
+        -F "parse_mode=Markdown" \
+        -F "caption=$2 | *MD5*: \`$MD5\`"
 }
-fi
 
-# ===== GCC 32 =====
-if ! [ -d "${GCC_32_DIR}" ]; then
-tg_msg "⚙️ Cloning GCC 32..."
-git clone --depth=1 -b lineage-19.1 \
-https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git \
-${GCC_32_DIR} || {
-tg_msg "❌ <b>Failed cloning GCC 32</b>"
+# Send Build Info
+sendinfo() {
+    tg "
+• IMcompiler Action •
+*Building on*: \`Github actions\`
+*Date*: \`${DATE}\`
+*Device*: \`${DEVICE} (${CODENAME})\`
+*Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
+*Compiler*: \`${KBUILD_COMPILER_STRING}\`
+*Last Commit*: \`${COMMIT_HASH}\`
+*Build Status*: \`${STATUS}\`"
 }
-fi
 
-mkdir -p out
-make O=out ARCH=arm64 $DEFCONFIG
-
-# ===== BUILD =====
-tg_msg "🔨 <b>Compilation Started</b>"
-make -j$(nproc --all) O=out \
-ARCH=arm64 \
-CC=clang \
-LD=ld.lld \
-AR=llvm-ar \
-AS=llvm-as \
-NM=llvm-nm \
-OBJCOPY=llvm-objcopy \
-OBJDUMP=llvm-objdump \
-STRIP=llvm-strip \
-CROSS_COMPILE=aarch64-linux-android- \
-CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-CLANG_TRIPLE=aarch64-linux-gnu- \
-Image.gz-dtb \
-dtbo.img 2>&1 | tee log.txt
-
-# ===== CHECK RESULT =====
-if [ -f "out/arch/arm64/boot/Image.gz-dtb" ] && [ -f "out/arch/arm64/boot/dtbo.img" ]; then
-tg_msg "✅ <b>Build Success</b>
-Zipping kernel..."
-
-if [ -d "$AK3_DIR" ]; then
-cp -r $AK3_DIR AnyKernel3
-else
-git clone -q https://github.com/malkist01/AnyKernel2.git || {
-tg_msg "❌ Failed cloning AnyKernel3"
+# Push kernel to channel
+push() {
+    cd AnyKernel || exit 1
+    ZIP=$(echo *.zip)
+    tgs "${ZIP}" "Build took $((DIFF / 60)) minute(s) and $((DIFF % 60)) second(s). | For *${DEVICE} (${CODENAME})* | ${KBUILD_COMPILER_STRING}"
 }
-fi
 
-cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3
-cp out/arch/arm64/boot/dtbo.img AnyKernel3
+# Catch Error
+finderr() {
+    curl -s -X POST "https://api.telegram.org/bot$token/sendMessage" \
+        -d chat_id="$chat_id" \
+        -d "disable_web_page_preview=true" \
+        -d "parse_mode=markdown" \
+        -d sticker="CAACAgIAAxkBAAED3JViAplqY4fom_JEexpe31DcwVZ4ogAC1BAAAiHvsEs7bOVKQsl_OiME" \
+        -d text="Build throw an error(s)"
+    error_sticker
+    exit 1
+}
 
-rm -rf *zip
-cd AnyKernel3
-git checkout main &> /dev/null
-zip -r9 "../$ZIPNAME" * -x '*.git*' README.md *placeholder
-cd ..
+# Compile
+compile() {
 
-# ===== SEND ZIP =====
-tg_file "$ZIPNAME" "📦 Kernel Build Finished
-⏱ Time: $((SECONDS / 60))m $((SECONDS % 60))s"
+    if [ -d "out" ]; then
+        rm -rf out && mkdir -p out
+    fi
 
-rm -rf AnyKernel3
-rm -rf out/arch/arm64/boot
-else
-tg_msg "❌ <b>Build Failed</b>
-Check <code>log.txt</code>"
-fi
+    make O=out ARCH="${ARCH}" "${DEFCONFIG}"
+    make -j"${PROCS}" O=out \
+       ARCH="arm64" \
+       CC="clang" \
+       READELF="llvm-readelf" \
+       OBJSIZE="llvm-size" \
+       OBJDUMP="llvm-objdump" \
+       OBJCOPY="llvm-objcopy" \
+       STRIP="llvm-strip" \
+       NM="llvm-nm" \
+       AR="llvm-ar" \
+       HOSTAR="llvm-ar" \
+       HOSTAS="llvm-as" \
+       HOSTNM="llvm-nm" \
+       LD="ld.lld" \
+       CLANG_TRIPLE="aarch64-linux-gnu-" \
+       CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
+       CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
+       Image.gz-dtb \
+       dtbo.img \
+       CC="${CCACHE} clang" \
 
-tg_msg "🎉 <b>Done!</b>"
+    if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
+        finderr
+        exit 1
+    fi
+
+    git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
+    cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
+    cp out/arch/arm64/boot/dtbo.img AnyKernel
+    cp out/arch/arm64/boot/dtb AnyKernel
+}
+# Zipping
+zipping() {
+    cd AnyKernel || exit 1
+    zip -r9 Teletubies-"${CODENAME}"-"${KVERS}"-"${DATE}".zip ./*
+    cd ..
+}
+
+setup
+sendinfo
+compile
+zipping
+END=$(date +"%s")
+DIFF=$((END - START))
+push
