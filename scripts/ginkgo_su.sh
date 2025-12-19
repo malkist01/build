@@ -50,10 +50,10 @@ Time: <code>$(date)</code>"
 if ! [ -d "${CLANG_DIR}" ]; then
 tg_msg "⚙️ Cloning Clang..."
       mkdir -p "${CLANG_DIR}"
-      wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/4d2864f08ff2c290563fb903a5156e0504620bbe/clang-r563880c.tar.gz -O clang.tar.gz       tar -xf clang.tar.gz -C ${CLANG_DIR} || {
+      curl -Lo WeebX-Clang-20.0.0git.tar.gz "https://github.com/XSans0/WeebX-Clang/releases/download/WeebX-Clang-20.0.0git-release/WeebX-Clang-20.0.0git.tar.gz"
+      tar -zxf WeebX-Clang-20.0.0git.tar.gz -C ${CLANG_DIR} || {
 tg_msg "❌ <b>Failed cloning Clang</b>"
 }
-    rm -f clang.tar.gz
 fi
 
 # ===== GCC 64 =====
