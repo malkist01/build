@@ -49,9 +49,11 @@ Time: <code>$(date)</code>"
 # ===== CLANG =====
 if ! [ -d "${CLANG_DIR}" ]; then
 tg_msg "⚙️ Cloning Clang..."
-git clone --depth=1 https://gitlab.com/Panchajanya1999/azure-clang.git -b main ${CLANG_DIR} || {
+      mkdir -p "${CLANG_DIR}"
+      wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/4d2864f08ff2c290563fb903a5156e0504620bbe/clang-r563880c.tar.gz -O clang.tar.gz       tar -xf clang.tar.gz -C ${CLANG_DIR} || {
 tg_msg "❌ <b>Failed cloning Clang</b>"
 }
+    rm -f clang.tar.gz
 fi
 
 # ===== GCC 64 =====
