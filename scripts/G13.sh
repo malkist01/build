@@ -62,8 +62,7 @@ fi
 # ===== GCC 64 =====
 if ! [ -d "${GCC_64_DIR}" ]; then
 tg_msg "⚙️ Cloning GCC 64..."
-git clone --depth=1 -b lineage-19.1 \
-https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9.git \
+git git clone --depth=1 -b main https://github.com/greenforce-project/gcc-arm64 \
 ${GCC_64_DIR} || {
 tg_msg "❌ <b>Failed cloning GCC 64</b>"
 }
@@ -72,8 +71,7 @@ fi
 # ===== GCC 32 =====
 if ! [ -d "${GCC_32_DIR}" ]; then
 tg_msg "⚙️ Cloning GCC 32..."
-git clone --depth=1 -b lineage-19.1 \
-https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9.git \
+git clone --depth=1 -b main https://github.com/greenforce-project/gcc-arm \
 ${GCC_32_DIR} || {
 tg_msg "❌ <b>Failed cloning GCC 32</b>"
 }
