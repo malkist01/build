@@ -11,6 +11,10 @@ GCC_64_DIR="${TC_DIR}aarch64-linux-android-4.9"
 GCC_32_DIR="${TC_DIR}arm-linux-androideabi-4.9"
 AK3_DIR="$HOME/AnyKernel3"
 DEFCONFIG="vendor/ginkgo_defconfig"
+ARCH=arm64
+export ARCH
+export DEFCONFIG="vendor/ginkgo_defconfig"
+export ARCH="arm64"
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
 DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
 
@@ -80,7 +84,8 @@ make O=out ARCH=arm64 $DEFCONFIG
 
 # ===== BUILD =====
 tg_msg "🔨 <b>Compilation Started</b>"
-make -j$(nproc --all) O=out \
+make O=out ARCH="${ARCH}" "${DEFCONFIG}"
+make -j"${PROCS}" O=out \
 ARCH=arm64 \
 CC=clang \
 LD=ld.lld \
