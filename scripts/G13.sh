@@ -90,9 +90,9 @@ NM=llvm-nm \
 OBJCOPY=llvm-objcopy \
 OBJDUMP=llvm-objdump \
 STRIP=llvm-strip \
-CROSS_COMPILE=aarch64-linux-android- \
-CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
-CLANG_TRIPLE=aarch64-linux-gnu- \
+CLANG_TRIPLE="aarch64-linux-gnu-" \
+CROSS_COMPILE="$GCC_64_DIR/bin/aarch64-linux-android-" \
+CROSS_COMPILE_ARM32="$GCC_32_DIR/bin/arm-linux-gnueabi-" \
 Image.gz-dtb \
 dtbo.img 2>&1 | tee log.txt
 
