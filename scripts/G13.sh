@@ -8,13 +8,15 @@ GCC_64_DIR="${TC_DIR}aarch64-linux-android-4.9"
 GCC_32_DIR="${TC_DIR}arm-linux-androideabi-4.9"
 AK3_DIR="$HOME/AnyKernel3"
 DEFCONFIG="vendor/ginkgo_defconfig"
+IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
+DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
 
 # ===== Set timezone =====
 sudo timedatectl set-timezone Asia/Jakarta
 
 # ===== TELEGRAM CONFIG =====
-BOT_TOKEN="8338188311:AAFgWEjptCCroGaaYd9oSLgGMNeu_D0pip0"
-CHAT_ID="-1002001516627"
+BOT_TOKEN="7596553794:AAGoeg4VypmUfBqfUML5VWt5mjivN5-3ah8"
+CHAT_ID="-1002287610863"
 API_URL="https://api.telegram.org/bot${BOT_TOKEN}"
 
 tg_msg() {
