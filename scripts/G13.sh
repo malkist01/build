@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 #
+rm -rf kernel
+git clone $REPO -b $BRANCH kernel 
+cd kernel
 SECONDS=0
 ZIPNAME="Neophyte-Apollo-Q-Ginkgo-$(TZ=Asia/Jakarta date +"%Y%m%d-%H%M").zip"
 TC_DIR="$(pwd)/../tc/"
