@@ -82,20 +82,20 @@ make O=out ARCH=arm64 $DEFCONFIG
 
 # ===== BUILD =====
 tg_msg "🔨 <b>Compilation Started</b>"
-make O=out ARCH="${ARCH}" "${DEFCONFIG}"
-make -j"${PROCS}" O=out \
-ARCH=arm64 \
-CC=clang \
-LD=ld.lld \
-AR=llvm-ar \
-AS=llvm-as \
-NM=llvm-nm \
-OBJCOPY=llvm-objcopy \
-OBJDUMP=llvm-objdump \
-STRIP=llvm-strip \
-CLANG_TRIPLE="aarch64-linux-gnu-" \
-CROSS_COMPILE="$GCC_64_DIR/bin/aarch64-linux-android-" \
-CROSS_COMPILE_ARM32="$GCC_32_DIR/bin/arm-linux-gnueabi-" \
+       make O=out ARCH="${ARCH}" "${DEFCONFIG}"
+       make -j"${PROCS}" O=out \
+       ARCH=arm64 \
+       CC=clang \
+       LD=ld.lld \
+       AR=llvm-ar \
+       AS=llvm-as \
+       NM=llvm-nm \
+       OBJCOPY=llvm-objcopy \
+       OBJDUMP=llvm-objdump \
+       STRIP=llvm-strip \
+       CLANG_TRIPLE="aarch64-linux-gnu-" \
+       CROSS_COMPILE="$GCC_64_DIR/bin/aarch64-elf-" \
+       CROSS_COMPILE_ARM32="$GCC_32_DIR/bin/arm-arm-eabi-" \
 Image.gz-dtb \
 dtbo.img 2>&1 | tee log.txt
 
