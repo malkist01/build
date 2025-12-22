@@ -1,4 +1,3 @@
-push
 #!/usr/bin/env bash
 
 # Dependencies
@@ -92,14 +91,13 @@ tgs() {
 # Send Build Info
 sendinfo() {
     tg "
-• IMcompiler Action •
-*Building on*: \`Github actions\`
-*Date*: \`${DATE}\`
-*Device*: \`${DEVICE} (${CODENAME})\`
-*Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
-*Compiler*: \`${KBUILD_COMPILER_STRING}\`
-*Last Commit*: \`${COMMIT_HASH}\`
-*Build Status*: \`${STATUS}\`"
+• Teletubies Action •
+* 💻 Building on*: \`Github actions\`
+* 📆 Date*: \`${DATE}\`
+* 📱Device*: \`${DEVICE} (${CODENAME})\`
+* 💼 Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
+* 📎 Last Commit*: \`${COMMIT_HASH}\`
+* 🛠️ Build Status*: \`${STATUS}\`"
 }
 
 # Push kernel to channel
