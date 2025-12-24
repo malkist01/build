@@ -1,3 +1,4 @@
+push
 #!/usr/bin/env bash
 
 # Dependencies
@@ -91,13 +92,14 @@ tgs() {
 # Send Build Info
 sendinfo() {
     tg "
-• Teletubies Action •
-* 💻 Building on*: \`Github actions\`
-* 📆 Date*: \`${DATE}\`
-* 📱Device*: \`${DEVICE} (${CODENAME})\`
-* 💼 Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
-* 📎 Last Commit*: \`${COMMIT_HASH}\`
-* 🛠️ Build Status*: \`${STATUS}\`"
+• IMcompiler Action •
+*Building on*: \`Github actions\`
+*Date*: \`${DATE}\`
+*Device*: \`${DEVICE} (${CODENAME})\`
+*Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
+*Compiler*: \`${KBUILD_COMPILER_STRING}\`
+*Last Commit*: \`${COMMIT_HASH}\`
+*Build Status*: \`${STATUS}\`"
 }
 
 # Push kernel to channel
@@ -130,17 +132,13 @@ compile() {
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
        CC="clang" \
-       READELF="llvm-readelf" \
-       OBJSIZE="llvm-size" \
-       OBJDUMP="llvm-objdump" \
-       OBJCOPY="llvm-objcopy" \
-       STRIP="llvm-strip" \
-       NM="llvm-nm" \
-       AR="llvm-ar" \
-       HOSTAR="llvm-ar" \
-       HOSTAS="llvm-as" \
-       HOSTNM="llvm-nm" \
        LD="ld.lld" \
+       AR="llvm-ar" \
+       AS="llvm-as" \
+       NM="llvm-nm" \
+       OBJCOPY="llvm-objcopy" \
+       OBJDUMP="llvm-objdump" \
+       STRIP="llvm-strip" \
        CLANG_TRIPLE="aarch64-linux-gnu-" \
        CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
