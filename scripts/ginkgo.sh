@@ -1,10 +1,11 @@
-#!/usr/bin/env bash
+ #!/usr/bin/env bash
 #
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
 SECONDS=0
 ZIPNAME="Teletubies-Ginkgo-$(TZ=Asia/Jakarta date +"%Y%m%d-%H%M").zip"
+LOCAL_DIR="$(pwd)/.."
 TC_DIR="$(pwd)/../tc/"
 CLANG_DIR="${TC_DIR}clang"
 GCC_64_DIR="${TC_DIR}aarch64-linux-android-4.9"
@@ -88,8 +89,8 @@ NM=llvm-nm \
 OBJCOPY=llvm-objcopy \
 OBJDUMP=llvm-objdump \
 STRIP=llvm-strip \
-CROSS_COMPILE=aarch64-linux-android- \
-CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+CROSS_COMPILE="$GCC_64_DIR/bin/aarch64-linux-android-" \
+CROSS_COMPILE_ARM32="$GCC_32_DIR/bin/arm-linux-gnueabi-" \
 CLANG_TRIPLE=aarch64-linux-gnu- \
 Image.gz-dtb \
 dtbo.img 2>&1 | tee log.txt
