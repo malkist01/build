@@ -5,6 +5,7 @@ push
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
+curl -LSs "https://raw.githubusercontent.com/rsuntk/KernelSU/main/kernel/setup.sh" | bash -s susfs-rksu-master
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -52,7 +53,7 @@ export CACHE
 export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
-export DEFCONFIG="ginkgo_defconfig"
+export DEFCONFIG="vendor/ginkgo_defconfig"
 export ARCH="arm64"
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
@@ -61,9 +62,7 @@ DEVICE="Redmi Note 8"
 export DEVICE
 CODENAME="ginkgo"
 export CODENAME
-KVERS="normal"
-export KVERS
-AVERS="(10)"
+KVERS="KSU"
 export AVERS
 COMMIT_HASH=$(git log --oneline --pretty=tformat:"%h  %s  [%an]" --abbrev-commit --abbrev=1 -1)
 export COMMIT_HASH
@@ -134,13 +133,17 @@ compile() {
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
        CC="clang" \
-       LD="ld.lld" \
-       AR="llvm-ar" \
-       AS="llvm-as" \
-       NM="llvm-nm" \
-       OBJCOPY="llvm-objcopy" \
+       READELF="llvm-readelf" \
+       OBJSIZE="llvm-size" \
        OBJDUMP="llvm-objdump" \
+       OBJCOPY="llvm-objcopy" \
        STRIP="llvm-strip" \
+       NM="llvm-nm" \
+       AR="llvm-ar" \
+       HOSTAR="llvm-ar" \
+       HOSTAS="llvm-as" \
+       HOSTNM="llvm-nm" \
+       LD="ld.lld" \
        CLANG_TRIPLE="aarch64-linux-gnu-" \
        CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
