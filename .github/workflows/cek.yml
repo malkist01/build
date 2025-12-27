@@ -1,0 +1,234 @@
+# linex Project
+name: linext Compiler v2.4-ext
+on:
+  workflow_dispatch:
+    inputs:
+      ubuntu:
+        description: 'Run on'
+        default: 'ubuntu-latest'
+        required: true
+        type: string
+      name:
+        description: 'Name'
+        default: '4.9-kernel'
+        required: true
+        type: string
+      compiler:
+        description: 'Compiler | gcc|clang|llvm'
+        default: 'clang'
+        required: true
+        type: string
+      aosp-clang:
+        description: 'Clang | false for disable'
+        default: 'https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r530567.tar.gz'
+        required: true
+        type: string
+      kernel-url:
+        description: 'Kernel-url'
+        default: 'https://github.com/linex-17/Limitless.git'
+        required: true
+        type: string
+      kernel-branch:
+        description: 'Kernel-branch'
+        default: 'main'
+        required: true
+        type: string
+      kernel-config:
+        description: 'Kernel-config'
+        default: 'xi_defconfig'
+        required: true
+        type: string
+      kernelsu:
+        description: 'KernelSU | false for disable'
+        default: 'curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.7.6'
+        required: true
+        type: string
+      disable-lto:
+        description: 'Disable LTO'
+        default: 'true'
+        required: true
+        type: string
+      AK3:
+        description: 'AnyKernel3'
+        default: 'https://github.com/osm0sis/AnyKernel3'
+        required: true
+        type: string
+jobs:
+  linext-24:
+    runs-on: ${{ inputs.ubuntu }}
+    steps:
+    - name: Checkin
+      run: |
+         echo "name: ${{ inputs.name }}"
+         echo "compiler: ${{ inputs.compiler }}"
+         echo "aosp-clang: ${{ inputs.aosp-clang }}"
+         if [ ${{ inputs.kernel-url }} != false ]; then
+            echo "kernel-url: ${{ inputs.kernel-url }}"
+            echo "kernel-branch: ${{ inputs.kernel-branch }}"
+         fi
+         if [ ${{ inputs.kernel-url }} == false ]; then
+            echo "kernel-url: use current repo"
+            sudo timedatectl set-timezone Asia/Jakarta
+            if [ ${{ inputs.kernel-branch }} != main ]; then
+               echo "custom-sc: ${{ inputs.kernel-branch }}"
+            fi
+            if [ ${{ inputs.kernel-branch }} == main ]; then
+               echo "custom-sc: disable"
+            fi
+         fi
+         echo "kernel-config: ${{ inputs.kernel-config }}"
+         echo "kernelsu: ${{ inputs.kernelsu }}"
+         echo "disable-lto: ${{ inputs.disable-lto }}"
+         echo "linex Project"
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Setup Packages
+      run: |
+         sudo apt-get install --no-install-recommends -y gcc-arm-linux-gnueabi gcc-aarch64-linux-gnu lld llvm g++-aarch64-linux-gnu bc
+         if [ ${{ inputs.aosp-clang }} == false ]; then
+            sudo apt install -y clang
+         fi
+         aria2c -q https://raw.githubusercontent.com/Homebrew/install/master/uninstall.sh && NONINTERACTIVE=1 bash ./uninstall.sh -f -q
+         if [ -f /bin/swapon ]; then
+             export SWAP_FILE=$(swapon --show=NAME | tail -n 1)
+             sudo swapoff $SWAP_FILE
+             sudo rm $SWAP_FILE
+             sudo fallocate -l 16G $SWAP_FILE
+             sudo chmod 600 $SWAP_FILE
+             sudo mkswap $SWAP_FILE
+             sudo swapon $SWAP_FILE
+             unset SWAP_FILE
+         fi
+    - name: Setup GCC
+      run: |
+         if [ ${{ inputs.aosp-clang }} == false ]; then
+            echo "aosp-clang disable"
+         else
+            mkdir -p -v $HOME/gcc-64
+            aria2c -o gcc-aarch64.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/+archive/0a0604336d4d1067aa1aaef8d3779b31fcee841d.tar.gz
+            tar -C $HOME/gcc-64 -zxf gcc-aarch64.tar.gz
+            mkdir -p -v $HOME/gcc-32
+            aria2c -o gcc-arm.tar.gz https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/+archive/4d16d93f49c2b5ecdd0f12c38d194835dd595603.tar.gz
+            tar -C $HOME/gcc-32 -zxf gcc-arm.tar.gz
+         fi
+    - name: Setup Clang
+      run: |
+         if [ ${{ inputs.aosp-clang }} == false ]; then
+            echo "aosp-clang disable"
+         else
+            if [ ${{ inputs.aosp-clang }} == "11" ]; then
+                aria2c -o aosp-clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/tags/android-11.0.0_r46/clang-r383902b1.tar.gz
+            elif [ ${{ inputs.aosp-clang }} == "13" ]; then
+                aria2c -o aosp-clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android13-release/clang-r450784d.tar.gz
+            elif [ ${{ inputs.aosp-clang }} == "14" ]; then
+                aria2c -o aosp-clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android14-release/clang-r487747c.tar.gz
+            elif [ ${{ inputs.aosp-clang }} == "19" ]; then
+                aria2c -o aosp-clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r530567.tar.gz
+            elif [ ${{ inputs.aosp-clang }} == "20" ]; then
+                aria2c -o aosp-clang.tar.gz https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r547379.tar.gz
+            elif [ ${{ inputs.aosp-clang }} != false ]; then
+                aria2c -o aosp-clang.tar.gz ${{ inputs.aosp-clang }}
+            fi
+            mkdir $HOME/clang -p -v
+            tar -C $HOME/clang -zxf aosp-clang.tar.gz
+         fi
+    - name: Setup Kernel
+      run: |
+         if [ ${{ inputs.kernel-url }} != false ]; then
+            git clone --depth=1 ${{ inputs.kernel-url }} -b ${{ inputs.kernel-branch }} kernel-dir
+         else
+            if [ ${{ inputs.kernel-branch }} != main ]; then
+               ${{ inputs.kernel-branch }}
+            else
+               echo "custom-sc: disable"
+            fi
+            ls
+         fi
+    - name: LTO
+      run: |
+         if [ ${{ inputs.kernel-url }} != false ]; then
+            cd kernel-dir
+         fi
+         if [ ${{ inputs.disable-lto }} = true ]; then
+             if grep -q "LTO" "arch/arm64/configs/${{ inputs.kernel-config }}"
+             then
+                  sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/arm64/configs/${{ inputs.kernel-config }} 
+                  sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/arm64/configs/${{ inputs.kernel-config }} 
+                  sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/arm64/configs/${{ inputs.kernel-config }} 
+                  echo "CONFIG_LTO_NONE=y" | tee -a arch/arm64/configs/${{ inputs.kernel-config }} >/dev/null
+             fi
+         fi
+    - name: Setup KernelSU
+      run: |
+         if [ ${{ inputs.kernel-url }} != false ]; then
+            cd kernel-dir
+         fi
+         if [ ${{ inputs.kernel-url }} == false ]; then
+            if [ ${{ inputs.kernel-branch }} != main ]; then
+               ${{ inputs.kernel-branch }}
+            fi
+         fi
+         rm -rf KernelSU
+         if [ ${{ inputs.kernelsu }} == ksu ]; then
+            curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.7.6
+         elif [ ${{ inputs.kernelsu }} == next ]; then
+            curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next
+         elif [ ${{ inputs.kernelsu }} != false ]; then
+            ${{ inputs.kernelsu }}
+         fi
+    - name: Compile
+      run: |
+         mkdir -p -v out
+         if [ ${{ inputs.kernel-url }} != false ]; then
+            cd kernel-dir
+            COMMAND="make -j$(nproc --all) ${{ inputs.kernel-config }} ARCH=arm64 O=../out all"
+         fi
+         if [ ${{ inputs.kernel-url }} == false ]; then
+            COMMAND="make -j$(nproc --all) ${{ inputs.kernel-config }} ARCH=arm64 O=out all"
+         fi
+         if [ ${{ inputs.aosp-clang }} == false ]; then
+            echo "aosp-clang disable"
+         else
+            export PATH=$HOME/clang/bin:$HOME/gcc-64/bin:$HOME/gcc-32/bin:$PATH
+         fi
+         export KBUILD_BUILD_USER="linex"
+         export KBUILD_BUILD_HOST="project"
+         if [ ${{ inputs.compiler }} == gcc ]; then
+            COMMAND+=" CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- CROSS_COMPILE_COMPAT=arm-linux-gnueabi-"
+         elif [ ${{ inputs.compiler }} == clang ] && [ ${{ inputs.aosp-clang }} == false ]; then
+            COMMAND+=" CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- CROSS_COMPILE_COMPAT=arm-linux-gnueabi- CC=clang"
+         elif [ ${{ inputs.compiler }} == clang ] && [ ${{ inputs.aosp-clang }} != false ]; then
+            COMMAND+=" CROSS_COMPILE=aarch64-linux-android- CROSS_COMPILE_ARM32=arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang"
+         elif [ ${{ inputs.compiler }} == llvm ] && [ ${{ inputs.aosp-clang }} == false ]; then
+            COMMAND+=" CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- CROSS_COMPILE_COMPAT=arm-linux-gnueabi- CC=clang LLVM=1 LLVM_IAS=0 AR=llvm-ar NM=llvm-nm STRIP=llvm-strip OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump READELF=llvm-readelf HOSTCC=clang HOSTCXX=clang++ HOSTAR=llvm-ar"
+         elif [ ${{ inputs.compiler }} == llvm ] && [ ${{ inputs.aosp-clang }} != false ]; then
+            COMMAND+=" CROSS_COMPILE=aarch64-linux-android- CROSS_COMPILE_ARM32=arm-linux-androideabi- CLANG_TRIPLE=aarch64-linux-gnu- CC=clang LLVM=1 LLVM_IAS=0 AR=llvm-ar NM=llvm-nm STRIP=llvm-strip OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump READELF=llvm-readelf HOSTCC=clang HOSTCXX=clang++ HOSTAR=llvm-ar"
+         fi
+         ${COMMAND}
+    - name: AnyKernel3
+      run: |
+          git clone ${{ inputs.AK3 }} AnyKernel3
+          rm -rf AnyKernel3/.git AnyKernel3/.github AnyKernel3/LICENSE AnyKernel3/README.md AnyKernel3/modules AnyKernel3/patch AnyKernel3/ramdisk
+          if [[ -f out/arch/arm64/boot/Image.gz-dtb ]]; then
+            cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3/Image.gz-dtb
+          elif [[ -f out/arch/arm64/boot/Image-dtb ]]; then
+            cp out/arch/arm64/boot/Image-dtb AnyKernel3/Image-dtb
+          elif [[ -f out/arch/arm64/boot/Image.gz ]]; then
+            cp out/arch/arm64/boot/Image.gz AnyKernel3/Image.gz
+          elif [[ -f out/arch/arm64/boot/Image ]]; then
+            cp out/arch/arm64/boot/Image AnyKernel3/Image
+          fi
+          if [ -f out/arch/arm64/boot/dtbo.img ]; then
+            cp out/arch/arm64/boot/dtbo.img AnyKernel3/dtbo.img
+          fi
+    - name: Upload
+      run: |
+          mkdir Upload
+          cp -rf AnyKernel3/* Upload
+    - id: Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: "${{ inputs.name }}"
+        path: Upload/*
+        
+# Enjoy Your Life....
