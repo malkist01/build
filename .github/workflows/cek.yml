@@ -20,7 +20,7 @@ on:
         type: string
       aosp-clang:
         description: 'Clang | false for disable'
-        default: 'https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r530567.tar.gz'
+        default: 'https://gitlab.com/nekoprjkt/aosp-clang/-/archive/17/aosp-clang-17.tar.gz?ref_type=heads'
         required: true
         type: string
       kernel-url:
