@@ -20,7 +20,7 @@ on:
         type: string
       aosp-clang:
         description: 'Clang | false for disable'
-        default: 'https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android14-release/clang-r487747c.tar.gz'
+        default: 'https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r530567.tar.gz'
         required: true
         type: string
       kernel-url:
@@ -37,11 +37,6 @@ on:
         description: 'Kernel-config'
         default: 'vendor/ginkgo_defconfig'
         required: true
-        type: string
-      kernelsu:
-        description: 'KernelSU | false for disable'
-        default: 'curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.7.6'
-        required: false
         type: string
       disable-lto:
         description: 'Disable LTO'
@@ -81,7 +76,6 @@ jobs:
             fi
          fi
          echo "kernel-config: ${{ inputs.kernel-config }}"
-         echo "kernelsu: ${{ inputs.kernelsu }}"
          echo "disable-lto: ${{ inputs.disable-lto }}"
          echo "linex Project"
     - name: Checkout
@@ -161,24 +155,6 @@ jobs:
                   sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/arm64/configs/${{ inputs.kernel-config }} 
                   echo "CONFIG_LTO_NONE=y" | tee -a arch/arm64/configs/${{ inputs.kernel-config }} >/dev/null
              fi
-         fi
-    - name: Setup KernelSU
-      run: |
-         if [ ${{ inputs.kernel-url }} != false ]; then
-            cd kernel-dir
-         fi
-         if [ ${{ inputs.kernel-url }} == false ]; then
-            if [ ${{ inputs.kernel-branch }} != main ]; then
-               ${{ inputs.kernel-branch }}
-            fi
-         fi
-         rm -rf KernelSU
-         if [ ${{ inputs.kernelsu }} == ksu ]; then
-            curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash -s v0.7.6
-         elif [ ${{ inputs.kernelsu }} == next ]; then
-            curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next
-         elif [ ${{ inputs.kernelsu }} != false ]; then
-            ${{ inputs.kernelsu }}
          fi
     - name: Compile
       run: |
