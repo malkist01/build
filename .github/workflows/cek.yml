@@ -20,7 +20,7 @@ on:
         type: string
       aosp-clang:
         description: 'Clang | false for disable'
-        default: 'https://gitlab.com/nekoprjkt/aosp-clang/-/archive/17/aosp-clang-17.tar.gz?ref_type=heads'
+        default: 'https://gitlab.com/nekoprjkt/aosp-clang/-/archive/17/aosp-clang-17.tar.gz'
         required: true
         type: string
       kernel-url:
@@ -36,11 +36,6 @@ on:
       kernel-config:
         description: 'Kernel-config'
         default: 'vendor/ginkgo_defconfig'
-        required: true
-        type: string
-      disable-lto:
-        description: 'Disable LTO'
-        default: 'true'
         required: true
         type: string
       AK3:
@@ -76,7 +71,6 @@ jobs:
             fi
          fi
          echo "kernel-config: ${{ inputs.kernel-config }}"
-         echo "disable-lto: ${{ inputs.disable-lto }}"
          echo "linex Project"
     - name: Checkout
       uses: actions/checkout@v4
@@ -141,20 +135,6 @@ jobs:
                echo "custom-sc: disable"
             fi
             ls
-         fi
-    - name: LTO
-      run: |
-         if [ ${{ inputs.kernel-url }} != false ]; then
-            cd kernel-dir
-         fi
-         if [ ${{ inputs.disable-lto }} = true ]; then
-             if grep -q "LTO" "arch/arm64/configs/${{ inputs.kernel-config }}"
-             then
-                  sed -i 's/CONFIG_LTO=y/CONFIG_LTO=n/' arch/arm64/configs/${{ inputs.kernel-config }} 
-                  sed -i 's/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG=n/' arch/arm64/configs/${{ inputs.kernel-config }} 
-                  sed -i 's/CONFIG_THINLTO=y/CONFIG_THINLTO=n/' arch/arm64/configs/${{ inputs.kernel-config }} 
-                  echo "CONFIG_LTO_NONE=y" | tee -a arch/arm64/configs/${{ inputs.kernel-config }} >/dev/null
-             fi
          fi
     - name: Compile
       run: |
