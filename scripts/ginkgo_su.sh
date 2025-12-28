@@ -5,6 +5,7 @@ push
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
+curl -LSs "https://raw.githubusercontent.com/rsuntk/KernelSU/susfs-rksu-master/kernel/setup.sh" bash -s susfs-rksu-master
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
