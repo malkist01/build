@@ -41,8 +41,8 @@ setup() {
   fi
 }
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
-DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
-DTB=$(pwd)/out/arch/arm64/boot/dtb
+DTBO=$(pwd)/out/arch/arm64/boot/dtbo-ginkgo.img
+DTB=$(pwd)/out/arch/arm64/boot/dtb-ginkgo
 DATE=$(date +"%Y%m%d-%H%M")
 START=$(date +"%s")
 KERNEL_DIR=$(pwd)
@@ -52,8 +52,15 @@ export CACHE
 export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
-export DEFCONFIG="vendor/trinket-perf_defconfig"
-export ARCH="arm64"
+FRAGMENT="$GINKGO_FRAGMENT"
+export=FRAGMENT
+GINKGO_FRAGMENT="vendor/ginkgo.config"
+export=GINKGO_FRAGMENT
+DEFCONFIG="vendor/trinket-perf_defconfig"
+export=DEFCONFIG
+BASE_FRAGMENT="vendor/xiaomi-trinket.config"
+export=BASE_FRAGMENT
+
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
 export KBUILD_BUILD_VERSION="1"
@@ -129,8 +136,7 @@ compile() {
     if [ -d "out" ]; then
         rm -rf out && mkdir -p out
     fi
-
-    make O=out ARCH="${ARCH}" "${DEFCONFIG}"
+    make O=out ARCH="${ARCH}" "${DEFCONFIG}" "${BASE_FRAGMENT}" "${FRAGMENT}" 
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
        CC="clang" \
@@ -145,7 +151,8 @@ compile() {
        CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
-       dtbo.img \
+       dtb-ginkgo \
+       dtbo-ginkgo.img \
        CC="${CCACHE} clang" \
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
@@ -155,8 +162,8 @@ compile() {
 
     git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
     cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
-    cp out/arch/arm64/boot/dtbo.img AnyKernel
-    cp out/arch/arm64/boot/dtb AnyKernel
+    cp out/arch/arm64/boot/dtbo-ginkgo.img AnyKernel
+    cp out/arch/arm64/boot/dtb-ginkgo AnyKernel
 }
 # Zipping
 zipping() {
