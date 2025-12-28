@@ -53,13 +53,9 @@ export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
 FRAGMENT="$GINKGO_FRAGMENT"
-export=FRAGMENT
 GINKGO_FRAGMENT="vendor/ginkgo.config"
-export=GINKGO_FRAGMENT
 DEFCONFIG="vendor/trinket-perf_defconfig"
-export=DEFCONFIG
 BASE_FRAGMENT="vendor/xiaomi-trinket.config"
-export=BASE_FRAGMENT
 
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
