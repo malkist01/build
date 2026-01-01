@@ -1,138 +1,176 @@
+push
 #!/usr/bin/env bash
-#
+
+# Dependencies
 rm -rf kernel
-git clone $REPO -b $BRANCH kernel 
+git clone $REPO -b $BRANCH kernel
 cd kernel
-SECONDS=0
-ZIPNAME="Neophyte-Apollo-Q-Ginkgo-$(TZ=Asia/Jakarta date +"%Y%m%d-%H%M").zip"
-TC_DIR="$(pwd)/../tc/"
-CLANG_DIR="${TC_DIR}clang"
-GCC_64_DIR="${TC_DIR}aarch64-linux-android-4.9"
-GCC_32_DIR="${TC_DIR}arm-linux-androideabi-4.9"
-AK3_DIR="$HOME/AnyKernel3"
-DEFCONFIG="vendor/ginkgo_defconfig"
+curl -LSs "https://raw.githubusercontent.com/FirmanBell/KernelSU-Next/legacy-test/kernel/setup.sh" | bash -s legacy-test
+LOCAL_DIR="$(pwd)/.."
+TC_DIR="${LOCAL_DIR}/toolchain"
+CLANG_DIR="${TC_DIR}/clang"
+ARCH_DIR="${TC_DIR}/aarch64-linux-android-4.9"
+ARM_DIR="${TC_DIR}/arm-linux-androideabi-4.9"
+setup() {
+  if ! [ -d "${CLANG_DIR}" ]; then
+      echo "Clang not found! Downloading Google prebuilt..."
+      mkdir -p "${CLANG_DIR}"
+      wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/4d2864f08ff2c290563fb903a5156e0504620bbe/clang-r563880c.tar.gz -O clang.tar.gz
+      if [ $? -ne 0 ]; then
+          echo "Download failed! Aborting..."
+          exit 1
+      fi
+        echo "Extracting clang to ${CLANG_DIR}..."
+      tar -xf clang.tar.gz -C "${CLANG_DIR}"
+    rm -f clang.tar.gz
+  fi
+
+  if ! [ -d "${ARCH_DIR}" ]; then
+      echo "gcc not found! Cloning to ${ARCH_DIR}..."
+      if ! git clone --depth=1 -b main https://github.com/greenforce-project/gcc-arm64 ${ARCH_DIR}; then
+          echo "Cloning failed! Aborting..."
+          exit 1
+      fi
+  fi
+
+  if ! [ -d "${ARM_DIR}" ]; then
+      echo "gcc_32 not found! Cloning to ${ARM_DIR}..."
+      if ! git clone --depth=1 -b main https://github.com/greenforce-project/gcc-arm ${ARM_DIR}; then
+          echo "Cloning failed! Aborting..."
+          exit 1
+      fi
+  fi
+}
+IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
+DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
+DTB=$(pwd)/out/arch/arm64/boot/dtb
+DATE=$(date +"%Y%m%d-%H%M")
+START=$(date +"%s")
+KERNEL_DIR=$(pwd)
+export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
+CACHE=1
+export CACHE
+export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
 export DEFCONFIG="vendor/ginkgo_defconfig"
 export ARCH="arm64"
-IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
-DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
-
-# ===== Set timezone =====
-sudo timedatectl set-timezone Asia/Jakarta
-
-# ===== TELEGRAM CONFIG =====
-BOT_TOKEN="7596553794:AAGoeg4VypmUfBqfUML5VWt5mjivN5-3ah8"
-CHAT_ID="-1002287610863"
-API_URL="https://api.telegram.org/bot${BOT_TOKEN}"
-
-tg_msg() {
-curl -s -X POST "${API_URL}/sendMessage" \
--d chat_id="${CHAT_ID}" \
--d text="$1" \
--d parse_mode=HTML > /dev/null
-}
-
-tg_file() {
-curl -s -X POST "${API_URL}/sendDocument" \
--F chat_id="${CHAT_ID}" \
--F document=@"$1" \
--F caption="$2" > /dev/null
-}
-
-# ===== ENV =====
-export PATH="$CLANG_DIR/bin:$PATH"
+export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
 export KBUILD_BUILD_VERSION="1"
-export LOCALVERSION
-
-# ===== START NOTIF =====
-tg_msg "🚀 <b>Kernel Build Started</b>
-Device: <b>Redmi Note 8 (Ginkgo)</b>
-Time: <code>$(date)</code>"
-
-# ===== CLANG =====
-if ! [ -d "${CLANG_DIR}" ]; then
-tg_msg "⚙️ Cloning Clang..."
-git clone --depth=1 https://gitlab.com/nekoprjkt/aosp-clang ${CLANG_DIR} || {
-tg_msg "❌ <b>Failed cloning Clang</b>"
-}
+DEVICE="Redmi Note 8"
+export DEVICE
+CODENAME="ginkgo"
+export CODENAME
+KVERS="Normal"
+export AVERS
+COMMIT_HASH=$(git log --oneline --pretty=tformat:"%h  %s  [%an]" --abbrev-commit --abbrev=1 -1)
+export COMMIT_HASH
+PROCS=$(nproc --all)
+export PROCS
+STATUS=STABLE
+export STATUS
+source "${HOME}"/.bashrc && source "${HOME}"/.profile
+if [ $CACHE = 1 ]; then
+    ccache -M 100G
+    export USE_CCACHE=1
 fi
+LC_ALL=C
+export LC_ALL
 
-# ===== GCC 64 =====
-if ! [ -d "${GCC_64_DIR}" ]; then
-tg_msg "⚙️ Cloning GCC 64..."
-git git clone --depth=1 -b main https://github.com/greenforce-project/gcc-arm64 \
-${GCC_64_DIR} || {
-tg_msg "❌ <b>Failed cloning GCC 64</b>"
+tg() {
+    curl -sX POST https://api.telegram.org/bot"${token}"/sendMessage -d chat_id="${chat_id}" -d parse_mode=Markdown -d disable_web_page_preview=true -d text="$1" &>/dev/null
 }
-fi
 
-# ===== GCC 32 =====
-if ! [ -d "${GCC_32_DIR}" ]; then
-tg_msg "⚙️ Cloning GCC 32..."
-git clone --depth=1 -b main https://github.com/greenforce-project/gcc-arm \
-${GCC_32_DIR} || {
-tg_msg "❌ <b>Failed cloning GCC 32</b>"
+tgs() {
+    MD5=$(md5sum "$1" | cut -d' ' -f1)
+    curl -fsSL -X POST -F document=@"$1" https://api.telegram.org/bot"${token}"/sendDocument \
+        -F "chat_id=${chat_id}" \
+        -F "parse_mode=Markdown" \
+        -F "caption=$2 | *MD5*: \`$MD5\`"
 }
-fi
 
-mkdir -p out
-make O=out ARCH=arm64 $DEFCONFIG
+# Send Build Info
+sendinfo() {
+    tg "
+• 🕊️Teletubiescompiler Action •
+* 💻 Building on*: \`Github actions\`
+* 📆 Date*: \`${DATE}\`
+* 📱Device*: \`${DEVICE} (${CODENAME})\`
+* 💼 Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
+* 🔗 Last Commit*: \`${COMMIT_HASH}\`
+* 🔨 Build Status*: \`${STATUS}\`"
+}
 
-# ===== BUILD =====
-tg_msg "🔨 <b>Compilation Started</b>"
-       make O=out ARCH="${ARCH}" "${DEFCONFIG}"
-       make -j"${PROCS}" O=out \
-       ARCH=arm64 \
-       CC=clang \
-       LD=ld.lld \
-       AR=llvm-ar \
-       AS=llvm-as \
-       NM=llvm-nm \
-       OBJCOPY=llvm-objcopy \
-       OBJDUMP=llvm-objdump \
-       STRIP=llvm-strip \
+# Push kernel to channel
+push() {
+    cd AnyKernel || exit 1
+    ZIP=$(echo *.zip)
+    tgs "${ZIP}" "Build took $((DIFF / 60)) minute(s) and $((DIFF % 60)) second(s). | For *${DEVICE} (${CODENAME})* | ${KBUILD_COMPILER_STRING}"
+}
+
+# Catch Error
+finderr() {
+    curl -s -X POST "https://api.telegram.org/bot$token/sendMessage" \
+        -d chat_id="$chat_id" \
+        -d "disable_web_page_preview=true" \
+        -d "parse_mode=markdown" \
+        -d sticker="CAACAgIAAxkBAAED3JViAplqY4fom_JEexpe31DcwVZ4ogAC1BAAAiHvsEs7bOVKQsl_OiME" \
+        -d text="Build throw an error(s)"
+    error_sticker
+    exit 1
+}
+
+# Compile
+compile() {
+
+    if [ -d "out" ]; then
+        rm -rf out && mkdir -p out
+    fi
+
+    make O=out ARCH="${ARCH}" "${DEFCONFIG}"
+    make -j"${PROCS}" O=out \
+       ARCH="arm64" \
+       CC="clang" \
+       READELF="llvm-readelf" \
+       OBJSIZE="llvm-size" \
+       OBJDUMP="llvm-objdump" \
+       OBJCOPY="llvm-objcopy" \
+       STRIP="llvm-strip" \
+       NM="llvm-nm" \
+       AR="llvm-ar" \
+       HOSTAR="llvm-ar" \
+       HOSTAS="llvm-as" \
+       HOSTNM="llvm-nm" \
+       LD="ld.lld" \
        CLANG_TRIPLE="aarch64-linux-gnu-" \
-       CROSS_COMPILE="$GCC_64_DIR/bin/aarch64-elf-" \
-       CROSS_COMPILE_ARM32="$GCC_32_DIR/bin/arm-arm-eabi-" \
-Image.gz-dtb \
-dtbo.img 2>&1 | tee log.txt
+       CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
+       CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
+       Image.gz-dtb \
+       dtbo.img \
+       CC="${CCACHE} clang" \
 
-# ===== CHECK RESULT =====
-if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
+    if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
         finderr
         exit 1
-fi
-tg_msg "✅ <b>Build Success</b>
-Zipping kernel..."
+    fi
 
-if [ -d "$AK3_DIR" ]; then
-cp -r $AK3_DIR AnyKernel3
-else
-git clone -q https://github.com/neophyteprjkt/AnyKernel3 || {
-tg_msg "❌ Failed cloning AnyKernel3"
+    git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
+    cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
+    cp out/arch/arm64/boot/dtbo.img AnyKernel
+    cp out/arch/arm64/boot/dtb AnyKernel
 }
-fi
+# Zipping
+zipping() {
+    cd AnyKernel || exit 1
+    zip -r9 Teletubies-"${CODENAME}"-"${KVERS}"-"${DATE}".zip ./*
+    cd ..
+}
 
-cp out/arch/arm64/boot/Image.gz-dtb AnyKernel3
-cp out/arch/arm64/boot/dtbo.img AnyKernel3
-
-rm -rf *zip
-cd AnyKernel3
-git checkout main &> /dev/null
-zip -r9 "../$ZIPNAME" * -x '*.git*' README.md *placeholder
-cd ..
-
-# ===== SEND ZIP =====
-tg_file "$ZIPNAME" "📦 Kernel Build Finished
-⏱ Time: $((SECONDS / 60))m $((SECONDS % 60))s"
-
-rm -rf AnyKernel3
-rm -rf out/arch/arm64/boot
-else
-tg_msg "❌ <b>Build Failed</b>
-Check <code>log.txt</code>"
-fi
-
-tg_msg "🎉 <b>Done!</b>"
+setup
+sendinfo
+compile
+zipping
+END=$(date +"%s")
+DIFF=$((END - START))
+push
