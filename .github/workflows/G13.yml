@@ -9,11 +9,11 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/malkist01/Gay.git'
+          default: 'https://github.com/SushiKernel/android_kernel_xiaomi_ginkgo.git'
           required: true
       branch:
           description: 'Kernel source branch'
-          default: '13'
+          default: 'sixteen'
           required: true
       token:
           description: 'Telegram bot token'
