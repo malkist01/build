@@ -5,8 +5,8 @@ push
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-rm -rf kernel
-curl -LSs "https://raw.githubusercontent.com/FirmanBell/KernelSU-Next/legacy-test/kernel/setup.sh" | bash -s legacy-test
+rm -rf KernelSU
+curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s legacy
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
