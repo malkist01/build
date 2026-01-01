@@ -5,6 +5,7 @@ push
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
+rm -rf kernel
 curl -LSs "https://raw.githubusercontent.com/FirmanBell/KernelSU-Next/legacy-test/kernel/setup.sh" | bash -s legacy-test
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
@@ -53,7 +54,7 @@ export CACHE
 export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
-export DEFCONFIG="vendor/ginkgo_defconfig"
+export DEFCONFIG="vendor/moe_defconfig"
 export ARCH="arm64"
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
