@@ -76,7 +76,7 @@ jobs:
       run: |
         cd $KERNEL_DIR
         CONFIG_NAME="${CODENAME}_defconfig"
-        DEFCONFIG_PATH="arch/arm64/vendor/configs/$CONFIG_NAME"
+        DEFCONFIG_PATH="arch/arm64/configs/vendor/$CONFIG_NAME"
         sed -i "s/CONFIG_LOCALVERSION=\"-perf\"/CONFIG_LOCALVERSION=\"-$KERNEL_VER\"/" "$DEFCONFIG_PATH"
         make O=out ARCH=arm64 "$CONFIG_NAME"
         mv out/.config "$DEFCONFIG_PATH"
