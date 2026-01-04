@@ -9,7 +9,7 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/neophyteprjkt/kernel_xiaomi_ginkgo.git'
+          default: 'https://github.com/malkist01/Tobrut'
           required: true
       branch:
           description: 'Kernel source branch'
