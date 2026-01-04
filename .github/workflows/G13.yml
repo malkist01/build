@@ -9,11 +9,11 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/malkist01/kernelGo'
+          default: 'https://github.com/neophyteprjkt/kernel_xiaomi_ginkgo.git'
           required: true
       branch:
           description: 'Kernel source branch'
-          default: 'sixteen'
+          default: 'kow'
           required: true
       token:
           description: 'Telegram bot token'
