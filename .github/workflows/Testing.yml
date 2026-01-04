@@ -1,0 +1,172 @@
+name: Ginkgo XXKSU
+
+on:
+  workflow_dispatch:
+    inputs:
+      token:
+          description: 'Telegram bot token'
+          default: '7596553794:AAGoeg4VypmUfBqfUML5VWt5mjivN5-3ah8'
+          required: true
+      chat_id:
+          description: 'Telegram chat id'
+          default: '-1002287610863'
+          required: true
+
+env:
+  TZ: Asia/Jakarta
+  token: ${{ github.event.inputs.token }}
+  chat_id: ${{ github.event.inputs.chat_id }}
+  
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    env:
+      CODENAME: ginkgo
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+      CHAT_ID: ${{ secrets.CHAT_ID }}
+      KERNEL_VER: Teletubies
+      KERNEL_BRANCH: main
+      KERNEL_REPO: https://github.com/neophyteprjkt/kernel_xiaomi_ginkgo
+      ANYKERNEL_REPO: https://github.com/malkist01/AnyKernel2
+      CLANG_URL: https://gitlab.com/kei-space/clang/r536225.git
+      KSU_URL: https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh
+      KSU_BRANCH: master
+
+    steps:
+    - name: Checkout workflow repo
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y \
+          bc bison ca-certificates curl flex gcc git libc6-dev libssl-dev \
+          openssl python-is-python3 ssh wget zip sudo make clang \
+          gcc-arm-linux-gnueabi software-properties-common build-essential \
+          libarchive-tools gcc-aarch64-linux-gnu libssl-dev libffi-dev \
+          libncurses5-dev zlib1g zlib1g-dev libreadline-dev libbz2-dev \
+          libsqlite3-dev make gcc pigz python3 cpio lld
+
+    - name: Clone kernel source
+      run: |
+        git clone --depth=1 "$KERNEL_REPO" -b "$KERNEL_BRANCH" kernel
+        cd kernel
+        echo "KERNEL_DIR=$(pwd)" >> $GITHUB_ENV
+
+    - name: Clone AnyKernel3
+      run: |
+        cd $KERNEL_DIR
+        git clone --depth=1 -b "$CODENAME" "$ANYKERNEL_REPO" AnyKernel3
+        echo "ANYKERNEL_DIR=$KERNEL_DIR/AnyKernel3" >> $GITHUB_ENV
+
+    - name: Clone clang
+      run: |
+        cd $KERNEL_DIR
+        git clone --depth=1 "$CLANG_URL" clang
+        echo "CLANG_DIR=$KERNEL_DIR/clang" >> $GITHUB_ENV
+        
+    - name: Set up XXKSU
+      run: |
+        cd $KERNEL_DIR
+        curl -LSs "$KSU_URL" | bash -s $KSU_BRANCH
+
+    - name: Generate defconfig
+      run: |
+        cd $KERNEL_DIR
+        CONFIG_NAME="ginkgo_${CODENAME}_defconfig"
+        DEFCONFIG_PATH="arch/arm64/vendor/configs/$CONFIG_NAME"
+        sed -i "s/CONFIG_LOCALVERSION=\"-perf\"/CONFIG_LOCALVERSION=\"-$KERNEL_VER\"/" "$DEFCONFIG_PATH"
+        make O=out ARCH=arm64 "$CONFIG_NAME"
+        mv out/.config "$DEFCONFIG_PATH"
+
+    - name: Build kernel
+      run: |
+        escape_markdown_v2() { 
+            echo "$1" | sed -e 's/\\/\\\\/g' -e 's/_/\\_/g' -e 's/\*/\\*/g' -e 's/\[/\\[/g' -e 's/\]/\\]/g' -e 's/(/\\(/g' -e 's/)/\\)/g' -e 's/~/\\~/g' -e 's/`/\\`/g' -e 's/>/\\>/g' -e 's/#/\\#/g' -e 's/+/\\+/g' -e 's/-/\\-/g' -e 's/=/\\=/g' -e 's/|/\\|/g' -e 's/{/\\{/g' -e 's/}/\\}/g';
+        }
+
+        send_telegram_message() {
+            local MESSAGE="$1"
+            curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
+                -d "chat_id=$CHAT_ID" \
+                -d "text=$MESSAGE"
+        }
+
+        send_telegram_file() {
+            local FILE_PATH="$1"
+            local FILE_NAME=$(basename "$FILE_PATH")
+            local ESCAPED_NAME=$(escape_markdown_v2 "$FILE_NAME")
+            local CAPTION="\`$ESCAPED_NAME\`"
+
+            curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendDocument" \
+                -F "chat_id=$CHAT_ID" \
+                -F "document=@$FILE_PATH" \
+                -F "caption=$CAPTION" \
+                -F "parse_mode=MarkdownV2"
+        }
+
+        stop_handler() {
+          send_telegram_message "⚠️ Compilation was unexpectedly stopped!"
+          [ -f "$LOG_FILE" ] && send_telegram_file "$LOG_FILE"
+          exit 1
+        }
+
+        trap stop_handler ERR INT
+
+        cd $KERNEL_DIR
+        LOG_FILE=$KERNEL_DIR/build.log
+        OUT_DIR=$KERNEL_DIR/out
+        KERNEL_IMAGE_DIR=$OUT_DIR/arch/arm64/boot
+        KERNEL_IMAGE=$KERNEL_IMAGE_DIR/Image.gz-dtb && dtbo.img
+        CONFIG_NAME="ginkgo_${CODENAME}_defconfig"
+        KERNEL_COMMIT_ID=$(git rev-parse --short=7 HEAD)
+        ZIP_NAME="${KERNEL_VER}_${CODENAME}-XXKSU-$(date +%Y%m%d)-${KERNEL_COMMIT_ID}.zip"
+        echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+        echo "LOG_FILE=$LOG_FILE" >> $GITHUB_ENV
+
+        send_telegram_message "🔨 Starting kernel compilation for $CODENAME on branch $KERNEL_BRANCH"
+
+        export KBUILD_BUILD_USER=ivy
+        export KBUILD_BUILD_HOST="$KERNEL_COMMIT_ID"
+        export PATH="$CLANG_DIR/bin:$PATH"
+
+        mkdir -p "$OUT_DIR"
+
+        make O="$OUT_DIR" ARCH=arm64 "$CONFIG_NAME"
+        make -j$(nproc) O="$OUT_DIR" ARCH=arm64 \
+          CC=clang LD=ld.lld AR=llvm-ar AS=llvm-as NM=llvm-nm \
+          OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump STRIP=llvm-strip \
+          CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi- \
+          2>&1 | tee -a "$LOG_FILE"
+
+        BUILD_RESULT=${PIPESTATUS[0]}
+
+        if [ "$BUILD_RESULT" -ne 0 ]; then
+          send_telegram_message "❌ Compilation failed!"
+          send_telegram_file "$LOG_FILE"
+          exit 1
+        fi
+
+        cp "$KERNEL_IMAGE" "$ANYKERNEL_DIR/Image.gz-dtb"
+        cd "$ANYKERNEL_DIR"
+        zip -r9 "../$ZIP_NAME" ./* > /dev/null
+        cd "$KERNEL_DIR"
+
+        send_telegram_file "$ZIP_NAME"
+        send_telegram_file "$LOG_FILE"
+        send_telegram_message "✅ Compilation completed, Flashable zip is ready"
+
+    - name: Upload kernel zip artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.ZIP_NAME }}
+        path: ${{ env.KERNEL_DIR }}/${{ env.ZIP_NAME }}
+
+    - name: Upload build log artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-log
+        path: ${{ env.LOG_FILE }}
