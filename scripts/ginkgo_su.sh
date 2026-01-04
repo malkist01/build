@@ -7,7 +7,7 @@ git clone $REPO -b $BRANCH kernel
 cd kernel
 git clone --depth=1 https://github.com/malkist01/patch
 curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" | bash -s main
-curl -LSs "https://raw.githubusercontent.com/rsuntk/KernelSU/main/kernel/setup.sh" | bash -s main
+curl -LSs "https://raw.githubusercontent.com/Sorayukii/KernelSU-Next/next/kernel/setup.sh" | bash -s legacy
 make mrproper
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
