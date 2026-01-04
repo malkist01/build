@@ -29,6 +29,7 @@ jobs:
       KERNEL_BRANCH: main
       KERNEL_REPO: https://github.com/neophyteprjkt/kernel_xiaomi_ginkgo
       ANYKERNEL_REPO: https://github.com/malkist01/AnyKernel2
+      ANYKERNEL_BRANCH: main
       CLANG_URL: https://gitlab.com/kei-space/clang/r536225.git
       KSU_URL: https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh
       KSU_BRANCH: master
@@ -57,7 +58,7 @@ jobs:
     - name: Clone AnyKernel3
       run: |
         cd $KERNEL_DIR
-        git clone --depth=1 -b "$CODENAME" "$ANYKERNEL_REPO" AnyKernel3
+        git clone --depth=1 -b "$ANYKERNEL_BRANCH" "$ANYKERNEL_REPO" AnyKernel3
         echo "ANYKERNEL_DIR=$KERNEL_DIR/AnyKernel3" >> $GITHUB_ENV
 
     - name: Clone clang
@@ -74,7 +75,7 @@ jobs:
     - name: Generate defconfig
       run: |
         cd $KERNEL_DIR
-        CONFIG_NAME="ginkgo_${CODENAME}_defconfig"
+        CONFIG_NAME="${CODENAME}_defconfig"
         DEFCONFIG_PATH="arch/arm64/vendor/configs/$CONFIG_NAME"
         sed -i "s/CONFIG_LOCALVERSION=\"-perf\"/CONFIG_LOCALVERSION=\"-$KERNEL_VER\"/" "$DEFCONFIG_PATH"
         make O=out ARCH=arm64 "$CONFIG_NAME"
