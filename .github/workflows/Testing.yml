@@ -5,7 +5,7 @@ on:
     inputs:
       token:
           description: 'Telegram bot token'
-          default: '7596553794:AAGoeg4VypmUfBqfUML5VWt5mjivN5-3ah8'
+          default: '7868194496:AAGY7WwRRbeCOPYOnczoCPh2psC43Q0F3JI'
           required: true
       chat_id:
           description: 'Telegram chat id'
