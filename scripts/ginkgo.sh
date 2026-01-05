@@ -1,10 +1,10 @@
-push
 #!/usr/bin/env bash
 
 # Dependencies
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
+make mrproper
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -41,8 +41,8 @@ setup() {
   fi
 }
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
-DTBO=$(pwd)/out/arch/arm64/boot/dtbo-ginkgo.img
-DTB=$(pwd)/out/arch/arm64/boot/dtb-ginkgo
+DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
+DTB=$(pwd)/out/arch/arm64/boot/dtb
 DATE=$(date +"%Y%m%d-%H%M")
 START=$(date +"%s")
 KERNEL_DIR=$(pwd)
@@ -52,11 +52,10 @@ export CACHE
 export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
-FRAGMENT="$GINKGO_FRAGMENT"
-GINKGO_FRAGMENT="vendor/ginkgo.config"
 DEFCONFIG="vendor/trinket-perf_defconfig"
 BASE_FRAGMENT="vendor/xiaomi-trinket.config"
-
+DEVICE_FRAGMENT="vendor/ginkgo.config"
+export ARCH="arm64"
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
 export KBUILD_BUILD_VERSION="1"
@@ -64,9 +63,7 @@ DEVICE="Redmi Note 8"
 export DEVICE
 CODENAME="ginkgo"
 export CODENAME
-KVERS="normal"
-export KVERS
-AVERS="(10)"
+KVERS="Testing"
 export AVERS
 COMMIT_HASH=$(git log --oneline --pretty=tformat:"%h  %s  [%an]" --abbrev-commit --abbrev=1 -1)
 export COMMIT_HASH
@@ -97,14 +94,13 @@ tgs() {
 # Send Build Info
 sendinfo() {
     tg "
-• IMcompiler Action •
-*Building on*: \`Github actions\`
-*Date*: \`${DATE}\`
-*Device*: \`${DEVICE} (${CODENAME})\`
-*Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
-*Compiler*: \`${KBUILD_COMPILER_STRING}\`
-*Last Commit*: \`${COMMIT_HASH}\`
-*Build Status*: \`${STATUS}\`"
+• 🕊️Teletubiescompiler Action •
+* 💻 Building on*: \`Github actions\`
+* 📆 Date*: \`${DATE}\`
+* 📱Device*: \`${DEVICE} (${CODENAME})\`
+* 💼 Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
+* 🔗 Last Commit*: \`${COMMIT_HASH}\`
+* 🔨 Build Status*: \`${STATUS}\`"
 }
 
 # Push kernel to channel
@@ -132,23 +128,27 @@ compile() {
     if [ -d "out" ]; then
         rm -rf out && mkdir -p out
     fi
-    make O=out ARCH="${ARCH}" "${DEFCONFIG}" "${BASE_FRAGMENT}" "${FRAGMENT}" 
+
+    make O=out ARCH=arm64 $DEFCONFIG $FRAGMENT $DEVICE_FRAGMENT
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
        CC="clang" \
-       LD="ld.lld" \
-       AR="llvm-ar" \
-       AS="llvm-as" \
-       NM="llvm-nm" \
-       OBJCOPY="llvm-objcopy" \
+       READELF="llvm-readelf" \
+       OBJSIZE="llvm-size" \
        OBJDUMP="llvm-objdump" \
+       OBJCOPY="llvm-objcopy" \
        STRIP="llvm-strip" \
+       NM="llvm-nm" \
+       AR="llvm-ar" \
+       HOSTAR="llvm-ar" \
+       HOSTAS="llvm-as" \
+       HOSTNM="llvm-nm" \
+       LD="ld.lld" \
        CLANG_TRIPLE="aarch64-linux-gnu-" \
        CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
-       dtb-ginkgo \
-       dtbo-ginkgo.img \
+       dtbo.img \
        CC="${CCACHE} clang" \
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
@@ -158,8 +158,7 @@ compile() {
 
     git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
     cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
-    cp out/arch/arm64/boot/dtbo-ginkgo.img AnyKernel
-    cp out/arch/arm64/boot/dtb-ginkgo AnyKernel
+    cp out/arch/arm64/boot/dtbo.img AnyKernel
 }
 # Zipping
 zipping() {
