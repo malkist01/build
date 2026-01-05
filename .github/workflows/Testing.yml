@@ -118,7 +118,6 @@ jobs:
         KERNEL_IMAGE_DIR=$OUT_DIR/arch/arm64/boot
         KERNEL_IMAGE=$KERNEL_IMAGE_DIR/Image.gz-dtb
         DTB_IMAGE=$KERNEL_IMAGE_DIR/dtbo.img
-        CONFIG_NAME="${CODENAME}_defconfig"
         KERNEL_COMMIT_ID=$(git rev-parse --short=7 HEAD)
         ZIP_NAME="${KERNEL_VER}_${CODENAME}-XXKSU-$(date +%Y%m%d)-${KERNEL_COMMIT_ID}.zip"
         echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
