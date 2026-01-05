@@ -76,7 +76,6 @@ jobs:
       run: |
         cd $KERNEL_DIR
         CONFIG_NAME="vendor/ginkgo_defconfig"
-        DEFCONFIG_PATH="arch/arm64/configs/vendor"
         make O=out ARCH=arm64 "$CONFIG_NAME"
         mv out/.config "$DEFCONFIG_PATH"
 
