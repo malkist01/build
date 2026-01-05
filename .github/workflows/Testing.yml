@@ -118,8 +118,9 @@ jobs:
         LOG_FILE=$KERNEL_DIR/build.log
         OUT_DIR=$KERNEL_DIR/out
         KERNEL_IMAGE_DIR=$OUT_DIR/arch/arm64/boot
-        KERNEL_IMAGE=$KERNEL_IMAGE_DIR/Image.gz-dtb && dtbo.img
-        CONFIG_NAME="ginkgo_${CODENAME}_defconfig"
+        KERNEL_IMAGE=$KERNEL_IMAGE_DIR/Image.gz-dtb
+        DTB_IMAGE=$KERNEL_IMAGE_DIR/dtbo.img
+        CONFIG_NAME="${CODENAME}_defconfig"
         KERNEL_COMMIT_ID=$(git rev-parse --short=7 HEAD)
         ZIP_NAME="${KERNEL_VER}_${CODENAME}-XXKSU-$(date +%Y%m%d)-${KERNEL_COMMIT_ID}.zip"
         echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
@@ -149,6 +150,7 @@ jobs:
         fi
 
         cp "$KERNEL_IMAGE" "$ANYKERNEL_DIR/Image.gz-dtb"
+        cp "$DTBO_IMAGE" "$ANYKERNEL_DIR/dtbo.img"
         cd "$ANYKERNEL_DIR"
         zip -r9 "../$ZIP_NAME" ./* > /dev/null
         cd "$KERNEL_DIR"
