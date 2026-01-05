@@ -4,7 +4,6 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-make mrproper
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -52,9 +51,8 @@ export CACHE
 export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
-DEFCONFIG="vendor/trinket-perf_defconfig"
-BASE_FRAGMENT="vendor/xiaomi-trinket.config"
-DEVICE_FRAGMENT="vendor/ginkgo.config"
+DEFCONFIG="ximi-winkgo_defconfig"
+export DEFCONFIG="ximi-winkgo_defconfig"
 export ARCH="arm64"
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
@@ -63,7 +61,9 @@ DEVICE="Redmi Note 8"
 export DEVICE
 CODENAME="ginkgo"
 export CODENAME
-KVERS="Testing"
+KVERS="normal"
+export KVERS
+AVERS="(10)"
 export AVERS
 COMMIT_HASH=$(git log --oneline --pretty=tformat:"%h  %s  [%an]" --abbrev-commit --abbrev=1 -1)
 export COMMIT_HASH
@@ -94,13 +94,14 @@ tgs() {
 # Send Build Info
 sendinfo() {
     tg "
-• 🕊️Teletubiescompiler Action •
-* 💻 Building on*: \`Github actions\`
-* 📆 Date*: \`${DATE}\`
-* 📱Device*: \`${DEVICE} (${CODENAME})\`
-* 💼 Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
-* 🔗 Last Commit*: \`${COMMIT_HASH}\`
-* 🔨 Build Status*: \`${STATUS}\`"
+• IMcompiler Action •
+*Building on*: \`Github actions\`
+*Date*: \`${DATE}\`
+*Device*: \`${DEVICE} (${CODENAME})\`
+*Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
+*Compiler*: \`${KBUILD_COMPILER_STRING}\`
+*Last Commit*: \`${COMMIT_HASH}\`
+*Build Status*: \`${STATUS}\`"
 }
 
 # Push kernel to channel
@@ -129,21 +130,17 @@ compile() {
         rm -rf out && mkdir -p out
     fi
 
-    make O=out ARCH=arm64 $DEFCONFIG $FRAGMENT $DEVICE_FRAGMENT
+    make O=out ARCH="${ARCH}" "${DEFCONFIG}"
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
        CC="clang" \
-       READELF="llvm-readelf" \
-       OBJSIZE="llvm-size" \
-       OBJDUMP="llvm-objdump" \
-       OBJCOPY="llvm-objcopy" \
-       STRIP="llvm-strip" \
-       NM="llvm-nm" \
-       AR="llvm-ar" \
-       HOSTAR="llvm-ar" \
-       HOSTAS="llvm-as" \
-       HOSTNM="llvm-nm" \
        LD="ld.lld" \
+       AR="llvm-ar" \
+       AS="llvm-as" \
+       NM="llvm-nm" \
+       OBJCOPY="llvm-objcopy" \
+       OBJDUMP="llvm-objdump" \
+       STRIP="llvm-strip" \
        CLANG_TRIPLE="aarch64-linux-gnu-" \
        CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
@@ -159,6 +156,7 @@ compile() {
     git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
     cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
     cp out/arch/arm64/boot/dtbo.img AnyKernel
+    cp out/arch/arm64/boot/dtb AnyKernel
 }
 # Zipping
 zipping() {
