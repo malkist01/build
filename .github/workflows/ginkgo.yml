@@ -9,11 +9,11 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/FlopKernel-Series/flop_trinket-mi_kernel.git'
+          default: 'https://github.com/kutemeikito/android_kernel_xiaomi_ginkgo.git'
           required: true
       branch:
           description: 'Kernel source branch'
-          default: 'floppy-new'
+          default: 'sixteen'
           required: true
       token:
           description: 'Telegram bot token'
