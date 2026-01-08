@@ -1,0 +1,430 @@
+name: Kernel Build
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+  push:
+    paths-ignore:
+      - 'README.md'
+    branches:
+      - test
+  schedule:
+   - cron: "0 12 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        kernel_config:
+          - kernel_name: "SM6125 - Ginkgo"
+            device: Ginkgo
+            kernel_url: "https://github.com/LineageOS/android_kernel_xiaomi_sm6125"
+            kernel_branch: "lineage-23.0"
+            anykernel_branch: "ginkgo"
+            tag: "SM6125-23.0"
+            defconfig: "vendor/trinket-perf_defconfig"
+            config: "vendor/xiaomi-trinket.config vendor/ginkgo.config"
+            patches_folder: "sm6125"
+            IN_DTBO: "out/arch/arm64/boot/dts/xiaomi/ginkgo-trinket-overlay.dtbo"
+        build:
+          - type: Normal
+            ksu: false
+            exclude: susfs
+            ak3_suffix: ""
+
+          - type: KSUN
+            ksu: true
+            exclude: susfs
+            repo: "KernelSU-Next/KernelSU-Next"
+            folder: "KernelSU-Next"
+            branch: "legacy"
+            ksu_patches: "KSUN/WildJames-Manager.patch"
+            susfs_ksu_patches: "KSUN/KSUN-SUSFS-2.0.0.patch"
+            kernel_patches: "seccomp.patch get_cred_rcu.patch strncpy_from_user_nofault.patch"
+            susfsless_kernel_patches: "scope-min-hooks-v1.6.patch"
+            susfs_kernel_patches: "susfs-2.0.0.patch"
+            extra_configs: "CONFIG_KSU_KPROBES_HOOK=n"
+            ak3_suffix: "-KSUNext"
+
+          - type: RKSU
+            ksu: true
+            repo: "rsuntk/KernelSU"
+            folder: "KernelSU"
+            branch: "main"
+            susfs_branch: "susfs-rksu-master"
+            kernel_patches: "get_cred_rcu.patch strncpy_from_user_nofault.patch"
+            susfsless_kernel_patches: "rksu_hook.patch"
+            susfs_kernel_patches: "susfs-2.0.0.patch"
+            extra_configs: "CONFIG_KSU_MANUAL_HOOK=y CONFIG_KSU_SYSCALL_HOOK=n"
+            susfs_configs: "CONFIG_KSU_SUSFS=y"
+            ak3_suffix: "-RKSU"
+
+          - type: SukiSU
+            ksu: true
+            repo: "SukiSU-Ultra/SukiSU-Ultra"
+            folder: "KernelSU"
+            branch: "builtin"
+            kernel_patches: "seccomp.patch"
+            susfsless_kernel_patches: "manual_hooks.patch reboot-hook.patch"
+            susfs_kernel_patches: "susfs-2.0.0.patch"
+            extra_configs: "CONFIG_KSU_MANUAL_SU=n CONFIG_KPM=y"
+            susfs_configs: "CONFIG_KSU_SUSFS=y CONFIG_KSU_NONE_HOOK=y"
+            susfsless_configs: "CONFIG_KSU_MANUAL_HOOK=y"
+            ak3_suffix: "-SukiSU"
+            kpm: "https://raw.githubusercontent.com/ShirkNeko/SukiSU_patch/refs/heads/main/kpm/patch_linux"
+
+          - type: xxKSU
+            ksu: true
+            exclude: susfs
+            repo: "backslashxx/KernelSU"
+            folder: "KernelSU"
+            branch: "master"
+            kernel_patches: "scope-min-hooks-v1.6.patch"
+            ak3_suffix: "-xxKSU"
+
+        susfs: [false, true]
+        exclude:
+          - build:
+              exclude: susfs
+            susfs: true
+          - build:
+              exclude: susfsless
+            susfs: false
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Set Environment Variables
+        id: vars
+        run: |
+          echo "config=${{ matrix.kernel_config.config }}" >> $GITHUB_ENV
+          echo "patches_url=${{ matrix.kernel_config.patches_url || 'https://github.com/TheSillyOk/kernel_ls_patches' }}" >> $GITHUB_ENV
+          echo "patches_branch_arg=${{ matrix.kernel_config.patches_branch && format('-b {0}', matrix.kernel_config.patches_branch) || '' }}" >> $GITHUB_ENV
+          echo "patches_folder=${{ matrix.kernel_config.patches_folder || 'noname' }}" >> $GITHUB_ENV
+          echo "anykernel_url=${{ matrix.kernel_config.anykernel_url || 'https://github.com/TheSillyOk/anykernel' }}" >> $GITHUB_ENV
+          echo "anykernel_branch_arg=${{ matrix.kernel_config.anykernel_branch && format('-b {0}', matrix.kernel_config.anykernel_branch) || '' }}" >> $GITHUB_ENV
+          echo "kernel_branch_arg=${{ matrix.kernel_config.kernel_branch && format('-b {0}', matrix.kernel_config.kernel_branch) || '' }}" >> $GITHUB_ENV
+          echo "susfs_branch=${{ matrix.kernel_config.susfs_branch || 'kernel-4.14' }}" >> $GITHUB_ENV
+          echo "python3=${{ matrix.kernel_config.python3_patch || 'false' }}" >> $GITHUB_ENV
+          echo "in_dtbo=${{ matrix.kernel_config.IN_DTBO || 'none' }}" >> $GITHUB_ENV
+
+          ${{ matrix.susfs || false }} && ksu_repo="${{ matrix.build.susfs_repo || matrix.build.repo }}" || ksu_repo="${{ matrix.build.repo }}" || true
+          echo "ksu_repo=$ksu_repo" >> $GITHUB_ENV
+          ${{ matrix.susfs || false }} && ksu_branch="${{ matrix.build.susfs_branch || matrix.build.branch }}" || ksu_branch="${{ matrix.build.branch }}" || true
+          echo "ksu_branch=$ksu_branch" >> $GITHUB_ENV
+
+
+      - name: Initialize Workspace and Install Tools
+        run: |
+          echo "workspace_folder=${GITHUB_WORKSPACE}/workspace" >> $GITHUB_ENV
+          mkdir -p "${GITHUB_WORKSPACE}/workspace"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends python3-pip git zip unzip gcc g++ make ninja-build file bc bison flex libfl-dev libssl-dev libelf-dev wget build-essential python3-dev python3-setuptools rsync ccache llvm-dev libncurses6 libfdt-dev binwalk
+
+      - name: Cache Clang
+        uses: actions/cache@v4
+        id: cache-clang
+        with:
+          path: ${{ env.workspace_folder }}/clang
+          key: clang-r547379-ubuntu-latest
+
+      - name: Download and Extract Clang
+        if: steps.cache-clang.outputs.cache-hit != 'true'
+        working-directory: ${{ env.workspace_folder }}
+        run: |
+          wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/main/clang-r547379.tar.gz -O clang.tar.gz
+          mkdir -p clang && tar -xf clang.tar.gz -C clang
+
+      - name: Set up ccache
+        run: |
+          ccache --max-size=2G
+          ccache --set-config=compression=true
+          echo "CCACHE_DIR=$HOME/.ccache" >> $GITHUB_ENV
+
+      - name: Cache Kernel Build
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ${{ env.device }}-${{ matrix.build.type }}-${{ matrix.kernel_config.tag }}-SUSFS_${{ matrix.susfs }}-ccache-${{ github.sha }}-${{ github.run_number }}
+          restore-keys: |
+            ${{ env.device }}-${{ matrix.build.type }}-${{ matrix.kernel_config.tag }}-SUSFS_${{ matrix.susfs }}-ccache-
+            ${{ env.device }}-${{ matrix.build.type }}-${{ matrix.kernel_config.tag }}-
+            -${{ matrix.build.type }}-${{ matrix.kernel_config.tag }}-
+            -${{ matrix.kernel_config.tag }}-
+
+      - name: Prepare Kernel Source
+        run: |
+          set -e
+          echo "kernel_folder=${{ env.workspace_folder }}/kernel_tree" >> $GITHUB_ENV
+          git clone --depth=1 "${{ matrix.kernel_config.kernel_url }}" ${{ env.kernel_branch_arg }} "${{ env.workspace_folder }}/kernel_tree"
+
+          echo "patches_dir=${{ env.workspace_folder }}/kernel_patches" >> $GITHUB_ENV
+          git clone --depth=1 "${{ env.patches_url }}" ${{ env.patches_branch_arg }} "${{ env.workspace_folder }}/kernel_patches"
+
+          cd "${{ env.workspace_folder }}/kernel_tree"
+
+          kernel_patches="fix_lto.patch ptrace_fix.patch"
+          if [[ -n "${{ matrix.build.kernel_patches }}" ]]; then
+            kernel_patches="$kernel_patches ${{ matrix.build.kernel_patches }}"
+          fi
+          for patch in $kernel_patches; do
+            patch -p1 < "${{ env.workspace_folder }}/kernel_patches/${patch}"
+          done
+
+          if ${{ env.python3 }}; then
+            patch -p1 < "${{ env.workspace_folder }}/kernel_patches/python3.patch" || true
+          fi
+
+          configs="CONFIG_LTO_CLANG=y CONFIG_LTO_CLANG_THIN=y CONFIG_HAVE_LTO_CLANG=y CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y CONFIG_MODVERSIONS=n CONFIG_KPROBES=n CONFIG_TMPFS_XATTR=y"
+          if [[ -n "${{ matrix.build.extra_configs }}" ]]; then
+            configs="$configs ${{ matrix.build.extra_configs }}"
+          fi
+          for config in $configs; do
+            echo "--> Added ${config} <--"
+            config_name=$(echo "${config}" | cut -d "=" -f 1)
+            sed -i -E 's/.*($config_name=.*)/# \1/gi' ${{ env.workspace_folder }}/kernel_tree/arch/arm64/configs/${{ matrix.kernel_config.defconfig }}
+            echo -e "\n${config}" >> "${{ env.workspace_folder }}/kernel_tree/arch/arm64/configs/${{ matrix.kernel_config.defconfig }}"
+          done
+
+          sed -i 's/-dirty//' ./scripts/setlocalversion
+
+      - name: Apply KSU (${{ matrix.build.type }})
+        if: matrix.build.ksu
+        working-directory: ${{ env.kernel_folder }}
+        run: |
+          set -e
+          curl -LSs "https://raw.githubusercontent.com/${{ env.ksu_repo }}/${{ env.ksu_branch }}/kernel/setup.sh" | bash -s ${{ env.ksu_branch }}
+
+          if [[ -n "${{ matrix.build.susfsless_kernel_patches }}" && "${{ matrix.susfs }}" != "true" ]]; then
+            for patch_name in ${{ matrix.build.susfsless_kernel_patches }}; do
+              patch -p1 -F 3 < "${{ env.patches_dir }}/${patch_name}"
+            done
+          fi
+
+          if [[ -n "${{ matrix.build.susfsless_ksu_patches }}" && "${{ matrix.susfs }}" != "true" ]]; then
+            cd "${{ matrix.build.folder }}"
+            for patch_name in ${{ matrix.build.susfsless_ksu_patches }}; do
+              patch -p1 < "${{ env.patches_dir }}/${patch_name}"
+            done
+            cd "${{ env.kernel_folder }}"
+          fi
+
+          if [[ -n "${{ matrix.build.ksu_patches }}" ]]; then
+            cd "${{ matrix.build.folder }}"
+            for patch_name in ${{ matrix.build.ksu_patches }}; do
+              patch -p1 < "${{ env.patches_dir }}/${patch_name}"
+            done
+            cd "${{ env.kernel_folder }}"
+          fi
+
+          if [[ -n "${{ matrix.build.susfsless_configs }}" && "${{ matrix.susfs }}" != "true" ]]; then
+            for config in ${{ matrix.build.susfsless_configs }}; do
+              echo "--> Added ${config} <--"
+              config_name=$(echo "${config}" | cut -d "=" -f 1)
+              sed -i -E 's/.*($config_name=.*)/# \1/gi' ${{ env.kernel_folder }}/arch/arm64/configs/${{ matrix.kernel_config.defconfig }}
+              echo -e "\n${config}" >> "${{ env.kernel_folder }}/arch/arm64/configs/${{ matrix.kernel_config.defconfig }}"
+            done
+          fi
+
+      - name: Apply SUSFS
+        if: matrix.susfs
+        working-directory: ${{ env.kernel_folder }}
+        run: |
+          set -e
+
+          if [[ -n "${{ matrix.build.susfs_ksu_patches }}" ]]; then
+            cd "${{ env.kernel_folder }}/${{ matrix.build.folder }}"
+            for patch_name in ${{ matrix.build.susfs_ksu_patches }}; do
+              patch -p1 -F 3 < "${{ env.patches_dir }}/${patch_name}"
+            done
+            cd "${{ env.kernel_folder }}"
+          fi
+
+          if [[ -n "${{ matrix.build.susfs_kernel_patches }}" ]]; then
+            for patch_name in ${{ matrix.build.susfs_kernel_patches }}; do
+              patch -p1 -F 3 < "${{ env.patches_dir }}/${patch_name}"
+            done
+          fi
+
+          # Holy fucking hacky fix
+          if [[ "${{ matrix.build.susfs_kernel_patches }}" == *"susfs-2"* && "${{ matrix.kernel_config.kernel_name }}" == "N18.1" ]]; then
+            patch -p1 < "${{ env.patches_dir }}/fix-n18.1-susfs-2.0.0.patch"
+          fi
+
+          if [[ -n "${{ matrix.build.susfs_configs }}" ]]; then
+            for config in ${{ matrix.build.susfs_configs }}; do
+              echo "--> Added ${config} <--"
+              config_name=$(echo "${config}" | cut -d "=" -f 1)
+              sed -i -E 's/.*($config_name=.*)/# \1/gi' ${{ env.kernel_folder }}/arch/arm64/configs/${{ matrix.kernel_config.defconfig }}
+              echo -e "\n${config}" >> "${{ env.kernel_folder }}/arch/arm64/configs/${{ matrix.kernel_config.defconfig }}"
+            done
+          fi
+
+      - name: Build Kernel
+        working-directory: ${{ env.kernel_folder }}
+        run: |
+          set -e
+
+          EXTRA_FOLDER="${{ env.kernel_folder }}/extra"
+          git clone --depth=1 https://github.com/TheSillyOk/kernel_extra -b main "$EXTRA_FOLDER"
+
+          export CCACHE_EXEC=$(which ccache)
+          export ARCH=arm64
+          export SUBARCH=arm64
+          export KBUILD_BUILD_USER="Ok"
+          export KBUILD_BUILD_HOST="Github"
+          export PATH="${{ env.workspace_folder }}/clang/bin:$PATH"
+
+          mkdir -p "out/arch/arm64/boot/dts/xiaomi/.ginkgo-trinket-overlay.dtbo.qcom-base"
+
+          make O=out ARCH=arm64 ${{ matrix.kernel_config.defconfig }} ${{ env.config }}
+          make O=out DTC_PREBUILT=true DTC=$EXTRA_FOLDER/dtc DTC_OVERLAY_TEST_EXT=$EXTRA_FOLDER/ufdt_apply_overlay MKDTIMG=$EXTRA_FOLDER/mkdtimg CC="ccache clang" LD=ld.lld LLVM=1 LLVM_IAS=1 -j"$(nproc --all)" CROSS_COMPILE=aarch64-linux-gnu-
+
+      - name: Create AnyKernel3 Zip
+        id: anykernel
+        run: |
+          set -e
+          BOOT_FOLDER="${{ env.kernel_folder }}/out/arch/arm64/boot"
+          AK3_FOLDER="$BOOT_FOLDER/ak_folder"
+          echo "ak_folder=$AK3_FOLDER" >> $GITHUB_ENV
+          git clone --recursive --depth=1 "${{ env.anykernel_url }}" ${{ env.anykernel_branch_arg }} "$AK3_FOLDER"
+
+          cp -f "$BOOT_FOLDER/Image.gz-dtb" "$AK3_FOLDER" 2>/dev/null || cp -f "$BOOT_FOLDER/Image.gz" "$AK3_FOLDER"
+
+          if [ -e "$BOOT_FOLDER/dtbo.img" ]; then
+            cp -f "$BOOT_FOLDER/dtbo.img" "$AK3_FOLDER"
+          elif [ "${{ env.in_dtbo }}" != "none" ]; then
+            python3 "${{ env.kernel_folder }}/extra/mkdtboimg.py" create "$AK3_FOLDER/dtbo.img" --custom0=0x00000000 --custom1=0x00000000 --page_size=4096 "${{ env.kernel_folder }}/${{ env.in_dtbo }}"
+          fi
+
+          if [[ -n "${{ matrix.build.kpm }}" ]]; then
+            cd "$AK3_FOLDER"
+            curl -LSs "${{ matrix.build.kpm }}" -o patch && chmod 777 patch
+            img_file=$(find . -type f -name "Image"* -maxdepth 1)
+            echo "$img_file"
+
+            # Decompress the kernel image if it's compressed
+            if [[ "$img_file" == "./Image.gz"* ]]; then
+              dd if="$img_file" bs=1 | gunzip > Image || true
+              echo "-> Convert to: Image"
+            elif [[ "$img_file" == "./Image.lz4" ]]; then
+              lz4 -d "$img_file" Image
+              echo "-> Decompress to: Image"
+            fi
+
+            ./patch && mv oImage Image
+
+            # Re-compress the kernel image to its original format
+            if [[ "$img_file" == "./Image.gz"* ]]; then
+              gzip -c Image > Image.gz
+              rm Image
+              echo "-> Compress: Image.gz"
+              # Special handling for images with appended DTB
+              if [[ "$img_file" == "./Image.gz-dtb" ]]; then
+                compressed_length=$(dd if=Image.gz-dtb bs=1 $skip | gzip -c | wc -c)
+                dd if=Image.gz-dtb bs=1 skip=$compressed_length > dtb
+                cat Image.gz dtb > Image.gz-dtb
+                rm Image.gz && rm dtb
+                echo "-- Image.gz -> Image.gz-dtb"
+              fi
+            elif [[ "$img_file" == "./Image.lz4" ]]; then
+              lz4 -f Image Image.lz4
+              rm Image
+              echo "-> Compress: Image.lz4"
+            fi
+
+            rm patch
+            cd -
+          fi
+
+          BUILD_SUFFIX="${{ matrix.build.ak3_suffix }}"
+          if [ "${{ matrix.susfs }}" == "true" ]; then
+            BUILD_SUFFIX="$BUILD_SUFFIX.SUSFS"
+          fi
+
+          ZIP_NAME="$(date +"%Y.%m.%d")-${{ env.device }}${BUILD_SUFFIX}-${{ matrix.kernel_config.tag }}-${{ github.run_number }}"
+          echo "anykernel_zipname=$ZIP_NAME" >> $GITHUB_ENV
+
+      - name: Upload AnyKernel Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.anykernel_zipname }}
+          path: ${{ env.ak_folder }}/*
+
+  release:
+    needs: build
+    if: github.event_name != 'pull_request'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./downloaded-artifacts
+
+      - name: Set Release Variables
+        id: release_vars
+        run: |
+          echo "date=$(date +"%d/%m/%Y")" >> $GITHUB_ENV
+          echo "run_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_ENV
+          echo "nightly_url=https://nightly.link/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_ENV
+
+          git clone --depth=1 "https://github.com/TheSillyOk/sh" "sh"
+          echo "sh_dir=$PWD/sh" >> $GITHUB_ENV
+          echo "artifacts_dir=$PWD/downloaded-artifacts" >> $GITHUB_ENV
+
+          if [ '${{ github.event_name }}' == 'schedule' ]; then
+            title="A new scheduled build has been made. (SCHEDULED BUILD)"
+          elif [ '${{ github.ref_name }}' == 'master' ]; then
+            title="A new tag release has been made. (STABLE BUILD)"
+          else
+            title="A new test build has been made. (TEST BUILD)"
+          fi
+          echo "tg_title=$title" >> $GITHUB_ENV
+
+          KSUN_URL=$(git ls-remote https://github.com/KernelSU-Next/KernelSU-Next.git legacy | awk '{print "https://github.com/KernelSU-Next/KernelSU-Next/commit/"$1}')
+          echo "KSUN_URL=$KSUN_URL" >> $GITHUB_ENV
+          echo "KSUN_V=$(./sh/get_ksuver.sh "KernelSU-Next" "KernelSU-Next" "legacy")" >> $GITHUB_ENV
+
+          RKSU_URL=$(git ls-remote https://github.com/rsuntk/KernelSU HEAD | awk '{print "https://github.com/rsuntk/KernelSU/commit/"$1}')
+          echo "RKSU_URL=$RKSU_URL" >> $GITHUB_ENV
+          echo "RKSU_V=$(./sh/get_ksuver.sh "rsuntk" "KernelSU" "main")" >> $GITHUB_ENV
+
+          SUKI_URL=$(git ls-remote https://github.com/SukiSU-Ultra/SukiSU-Ultra builtin | awk '{print "https://github.com/SukiSU-Ultra/SukiSU-Ultra/commit/"$1}')
+          echo "SUKI_URL=$SUKI_URL" >> $GITHUB_ENV
+          echo "SUKI_V=$(./sh/get_ksuver.sh "SukiSU-Ultra" "SukiSU-Ultra" "main")" >> $GITHUB_ENV
+
+          xxKSU_URL=$(git ls-remote https://github.com/backslashxx/KernelSU HEAD | awk '{print "https://github.com/backslashxx/KernelSU/commit/"$1}')
+          echo "xxKSU_URL=$xxKSU_URL" >> $GITHUB_ENV
+          echo "xxKSU_V=$(./sh/get_ksuver.sh "backslashxx" "KernelSU" "master")" >> $GITHUB_ENV
+
+      - name: Generate Release Body
+        id: release_body
+        run: |
+          cat << EOF > release_body.md
+          Kernels w/ KSU (and forks) + SUSFS by @TheSillyOk
+
+          Updated: ${{ env.date }}
+
+          [Updates](https://t.me/ok_kernel) • [Support](https://t.me/ok_kernel_chat) • [Credits](https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}?tab=readme-ov-file#credits)
+
+          [Github run](${{ env.run_url }}) • [Nightly run](${{ env.nightly_url }}) • CI run n°${{ github.run_number }}
+
+          [SUSFS Module](https://github.com/sidex15/ksu_module_susfs/releases)
+
+          KSU Managers:
+          -> Rissu's KernelSU (\`RKSU\`): [Manager](https://github.com/rsuntk/KernelSU/releases) / [CI* channel](https://t.me/rsukrnlsu)
+          -> KernelSU-Next (\`KSUN\`): [Releases](https://github.com/rifsxd/KernelSU-Next/releases) / [CI builds](https://t.me/ksunext_ci)
+          -> xx's KernelSU (\`xxKSU\`): [Releases](https://github.com/backslashxx/KernelSU/releases) / [KowSU](https://t.me/kowsu_build)
+
+          Versions used for KernelSU variants & susfs:
+          -> Rissu's KernelSU  (\`RKSU\`): [${{ env.RKSU_V }}](${{ env.RKSU_URL }}) - SUSFS 2.0.0
+          -> KernelSU Next (\`KSUN\`): [${{ env.KSUN_V }}](${{ env.KSUN_URL }}) - SUSFS 1.5.12
+          -> xx's KernelSU (\`xxKSU\`): [${{ env.xxKSU_V }}](${{ env.xxKSU_URL }})
+
+          ### Unsure about which kernel to choose? [View the README.md file for recommendations](https://github.com/${{ github.
