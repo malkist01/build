@@ -19,6 +19,16 @@ jobs:
       fail-fast: false
       matrix:
         kernel_config:
+          - kernel_name: "SM6125"
+            kernel_url: "https://github.com/LineageOS/android_kernel_xiaomi_sm6125"
+            kernel_branch: "lineage-23.0"
+            anykernel_branch: "sm6125"
+            tag: "SM6125-23.0"
+            defconfig: "vendor/trinket-perf_defconfig"
+            config: "vendor/xiaomi-trinket.config vendor/laurel_sprout.config"
+            patches_folder: "sm6125"
+            IN_DTBO: "out/arch/arm64/boot/dts/xiaomi/laurel_sprout-trinket-overlay.dtbo"
+
           - kernel_name: "SM6125 - Ginkgo"
             device: Ginkgo
             kernel_url: "https://github.com/LineageOS/android_kernel_xiaomi_sm6125"
@@ -29,6 +39,7 @@ jobs:
             config: "vendor/xiaomi-trinket.config vendor/ginkgo.config"
             patches_folder: "sm6125"
             IN_DTBO: "out/arch/arm64/boot/dts/xiaomi/ginkgo-trinket-overlay.dtbo"
+
         build:
           - type: Normal
             ksu: false
@@ -109,6 +120,7 @@ jobs:
           echo "anykernel_branch_arg=${{ matrix.kernel_config.anykernel_branch && format('-b {0}', matrix.kernel_config.anykernel_branch) || '' }}" >> $GITHUB_ENV
           echo "kernel_branch_arg=${{ matrix.kernel_config.kernel_branch && format('-b {0}', matrix.kernel_config.kernel_branch) || '' }}" >> $GITHUB_ENV
           echo "susfs_branch=${{ matrix.kernel_config.susfs_branch || 'kernel-4.14' }}" >> $GITHUB_ENV
+          echo "device=${{ matrix.kernel_config.device || 'MiA3' }}" >> $GITHUB_ENV
           echo "python3=${{ matrix.kernel_config.python3_patch || 'false' }}" >> $GITHUB_ENV
           echo "in_dtbo=${{ matrix.kernel_config.IN_DTBO || 'none' }}" >> $GITHUB_ENV
 
@@ -411,20 +423,4 @@ jobs:
 
           Updated: ${{ env.date }}
 
-          [Updates](https://t.me/ok_kernel) • [Support](https://t.me/ok_kernel_chat) • [Credits](https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}?tab=readme-ov-file#credits)
-
-          [Github run](${{ env.run_url }}) • [Nightly run](${{ env.nightly_url }}) • CI run n°${{ github.run_number }}
-
-          [SUSFS Module](https://github.com/sidex15/ksu_module_susfs/releases)
-
-          KSU Managers:
-          -> Rissu's KernelSU (\`RKSU\`): [Manager](https://github.com/rsuntk/KernelSU/releases) / [CI* channel](https://t.me/rsukrnlsu)
-          -> KernelSU-Next (\`KSUN\`): [Releases](https://github.com/rifsxd/KernelSU-Next/releases) / [CI builds](https://t.me/ksunext_ci)
-          -> xx's KernelSU (\`xxKSU\`): [Releases](https://github.com/backslashxx/KernelSU/releases) / [KowSU](https://t.me/kowsu_build)
-
-          Versions used for KernelSU variants & susfs:
-          -> Rissu's KernelSU  (\`RKSU\`): [${{ env.RKSU_V }}](${{ env.RKSU_URL }}) - SUSFS 2.0.0
-          -> KernelSU Next (\`KSUN\`): [${{ env.KSUN_V }}](${{ env.KSUN_URL }}) - SUSFS 1.5.12
-          -> xx's KernelSU (\`xxKSU\`): [${{ env.xxKSU_V }}](${{ env.xxKSU_URL }})
-
-          ### Unsure about which kernel to choose? [View the README.md file for recommendations](https://github.com/${{ github.
+          [Updates](https://t.me/ok_kernel) • [Support](https://t.me/ok_kernel_chat) • [Credits](https://github.com/${{ github.repository }}/tree/${{ github.ref_n
