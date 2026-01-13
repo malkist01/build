@@ -5,10 +5,6 @@ push
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-git clone --depth=1 https://github.com/malkist01/patch
-curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" | bash -s main
-curl -LSs "https://raw.githubusercontent.com/Sorayukii/KernelSU/main/kernel/setup.sh" | bash -s main
-make mrproper
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
