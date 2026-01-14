@@ -40,7 +40,7 @@ setup() {
   fi
   
 if [[ $1 = "-k" || $1 = "--ksu" ]]; then
-echo -e "\nCleanup KernelSU first on local build\n"
+   echo -e "\nCleanup KernelSU first on local build\n"
 rm -rf KernelSU drivers/kernelsu
 
 echo -e "\nKSU Support, let's Make it On\n"
@@ -48,11 +48,11 @@ curl -kLSs "https://raw.githubusercontent.com/renzyprjkt/KernelSU-Next/legacy/ke
 
 sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/configs/vendor/ginkgo_defconfig
 else
-echo -e "\nKSU not Support, let's Skip\n"
-fi
-
+          echo -e "\nKSU not Support, let's Skip\n"
+          exit 1
+      fi
+  fi
 }
-
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
 DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
 DTB=$(pwd)/out/arch/arm64/boot/dtb.img
