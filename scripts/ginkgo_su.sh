@@ -1,4 +1,3 @@
-push
 #!/usr/bin/env bash
 
 # Dependencies
@@ -39,10 +38,24 @@ setup() {
           exit 1
       fi
   fi
+  
+if [[ $1 = "-k" || $1 = "--ksu" ]]; then
+echo -e "\nCleanup KernelSU first on local build\n"
+rm -rf KernelSU drivers/kernelsu
+
+echo -e "\nKSU Support, let's Make it On\n"
+curl -kLSs "https://raw.githubusercontent.com/renzyprjkt/KernelSU-Next/legacy/kernel/setup.sh" | bash -s legacy
+
+sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/configs/ginkgo_defconfig
+else
+echo -e "\nKSU not Support, let's Skip\n"
+fi
+
 }
+
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
 DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
-DTB=$(pwd)/out/arch/arm64/boot/dtb
+DTB=$(pwd)/out/arch/arm64/boot/dtb.img
 DATE=$(date +"%Y%m%d-%H%M")
 START=$(date +"%s")
 KERNEL_DIR=$(pwd)
@@ -147,6 +160,7 @@ compile() {
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
        dtbo.img \
+       dtb.img 2>&1 | tee log.txt
        CC="${CCACHE} clang" \
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
@@ -157,7 +171,7 @@ compile() {
     git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
     cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
     cp out/arch/arm64/boot/dtbo.img AnyKernel
-    cp out/arch/arm64/boot/dtb AnyKernel
+    cp out/arch/arm64/boot/dtb.img AnyKernel
 }
 # Zipping
 zipping() {
