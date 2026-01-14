@@ -5,7 +5,6 @@ git clone $REPO -b $BRANCH kernel
 cd kernel
 rm -rf drivers/kernelsu
 curl -kLSs "https://raw.githubusercontent.com/renzyprjkt/KernelSU-Next/legacy/kernel/setup.sh" | bash -s legacy
-sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/configs/vendor/ginkgo_defconfig
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
