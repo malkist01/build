@@ -9,11 +9,11 @@ on:
           required: true
       repo:
           description: 'Kernel source'
-          default: 'https://github.com/malkist01/Pooh'
+          default: 'https://github.com/malkist01/Tobrut'
           required: true
       branch:
           description: 'Kernel source branch'
-          default: 'main'
+          default: '16'
           required: true
       token:
           description: 'Telegram bot token'
