@@ -46,7 +46,7 @@ rm -rf KernelSU drivers/kernelsu
 echo -e "\nKSU Support, let's Make it On\n"
 curl -kLSs "https://raw.githubusercontent.com/renzyprjkt/KernelSU-Next/legacy/kernel/setup.sh" | bash -s legacy
 
-sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/configs/ginkgo_defconfig
+sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/configs/vendor/ginkgo_defconfig
 else
 echo -e "\nKSU not Support, let's Skip\n"
 fi
