@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
-
 # Dependencies
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
+echo -e "\nCleanup KernelSU first on local build\n"
+rm -rf KernelSU drivers/kernelsu
+echo -e "\nKSU Support, let's Make it On\n"
+curl -kLSs "https://raw.githubusercontent.com/renzyprjkt/KernelSU-Next/legacy/kernel/setup.sh" | bash -s legacy
+sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/configs/vendor/ginkgo_defconfig
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -35,20 +39,6 @@ setup() {
       echo "gcc_32 not found! Cloning to ${ARM_DIR}..."
       if ! git clone --depth=1 -b main https://github.com/greenforce-project/gcc-arm ${ARM_DIR}; then
           echo "Cloning failed! Aborting..."
-          exit 1
-      fi
-  fi
-  
-if [[ $1 = "-k" || $1 = "--ksu" ]]; then
-   echo -e "\nCleanup KernelSU first on local build\n"
-rm -rf KernelSU drivers/kernelsu
-
-echo -e "\nKSU Support, let's Make it On\n"
-curl -kLSs "https://raw.githubusercontent.com/renzyprjkt/KernelSU-Next/legacy/kernel/setup.sh" | bash -s legacy
-
-sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/configs/vendor/ginkgo_defconfig
-else
-          echo -e "\nKSU not Support, let's Skip\n"
           exit 1
       fi
   fi
@@ -160,7 +150,6 @@ compile() {
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
        dtbo.img \
-       dtb.img 2>&1 | tee log.txt
        CC="${CCACHE} clang" \
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
