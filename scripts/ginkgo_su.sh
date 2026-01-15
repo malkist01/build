@@ -3,9 +3,6 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-rm -rf drivers/kernelsu
-curl -kLSs "https://raw.githubusercontent.com/renzyprjkt/KernelSU-Next/legacy/kernel/setup.sh" | bash -s legacy
-patch -p1 < KSUN-SUSFS-2.0.0.patch
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
