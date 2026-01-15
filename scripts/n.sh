@@ -4,8 +4,11 @@ rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
 curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s legacy
-patch -p1 < WildJames-Manager.patch SUSFS-2.0.0.patch seccomp.patch scope-min-hooks-v1.6.patch susfs-2.0.0.patch
-sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/configs/ginkgo_defconfig
+patch -p1 < WildJames-Manager.patch
+patch -p1 < SUSFS-2.0.0.patch
+patch -p1 < seccomp.patch scope-min-hooks-v1.6.patch
+patch -p1 < susfs-2.0.0.patch
+sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/vendor/configs/ginkgo_defconfig
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
