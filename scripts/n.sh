@@ -5,7 +5,6 @@ git clone $REPO -b $BRANCH kernel
 cd kernel
 curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s legacy
 patch -p1 < WildJames-Manager.patch
-patch -p1 < KSUN-SUSFS-2.0.0.patch
 patch -p1 < seccomp.patch
 patch -p1 < scope-min-hooks-v1.6.patch
 sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/vendor/configs/ginkgo_defconfig
