@@ -1,0 +1,53 @@
+name: Ginkgo Testing
+
+on:
+  workflow_dispatch:
+    inputs:
+      device:
+          description: 'Device'
+          default: 'ginkgo'
+          required: true
+      repo:
+          description: 'Kernel source'
+          default: 'https://github.com/malkist01/Tobrut'
+          required: true
+      branch:
+          description: 'Kernel source branch'
+          default: 'main'
+          required: true
+      token:
+          description: 'Telegram bot token'
+          default: '7868194496:AAGY7WwRRbeCOPYOnczoCPh2psC43Q0F3JI'
+          required: true
+      chat_id:
+          description: 'Telegram chat id'
+          default: '-1002287610863'
+          required: true
+
+
+env:
+  TZ: Asia/Jakarta
+  DEVICE: ${{ github.event.inputs.device }}
+  REPO: ${{ github.event.inputs.repo }}
+  BRANCH: ${{ github.event.inputs.branch }}
+  token: ${{ github.event.inputs.token }}
+  chat_id: ${{ github.event.inputs.chat_id }}
+
+jobs:
+  kernel-build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Initializing environment
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends python3-pip git zip unzip gcc g++ make ninja-build file bc bison flex libfl-dev libssl-dev libelf-dev wget build-essential python3-dev python3-setuptools rsync ccache llvm-dev libncurses6 libfdt-dev binwalk
+
+      - name: Compiling
+        run: |
+          if [ "${DEVICE}" = "ginkgo" ]; then
+            wget https://raw.githubusercontent.com/malkist01/build/main/scripts/n.sh
+            bash n.sh
+          else
+            echo "Device not supported yet"
+          fi
