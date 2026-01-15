@@ -3,6 +3,7 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
+patch -p1 < susfs-1.5.12.patch
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -145,6 +146,7 @@ compile() {
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
        dtbo.img \
+       dtb.img \
        CC="${CCACHE} clang" \
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
