@@ -3,7 +3,11 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-
+curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s builtin
+patch -p1 < seccomp.patch
+echo "CONFIG_KSU=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
+echo "CONFIG_KSU_MANUAL_SU=n" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
+echo "CONFIG_KPM=n" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -38,20 +42,10 @@ setup() {
           exit 1
       fi
   fi
-if [[ $1 = "-k" || $1 = "--ksu" ]]; then
-echo -e "\nCleanup KernelSU first on local build\n"
-rm -rf KernelSU drivers/kernelsu
-
-echo -e "\nKSU Support, let's Make it On\n"
-curl -kLSs "https://raw.githubusercontent.com/renzyprjkt/KernelSU-Next/legacy/kernel/setup.sh" | bash -s legacy
-
-sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/configs/ginkgo_defconfig
-else
-echo -e "\nKSU not Support, let's Skip\n"
-fi
 }
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
 DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
+DTB=$(pwd)/out/arch/arm64/boot/dtb.img
 DATE=$(date +"%Y%m%d-%H%M")
 START=$(date +"%s")
 KERNEL_DIR=$(pwd)
@@ -61,7 +55,7 @@ export CACHE
 export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
-export DEFCONFIG="ginkgo_defconfig"
+export DEFCONFIG="vendor/ginkgo_defconfig"
 export ARCH="arm64"
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
@@ -70,7 +64,7 @@ DEVICE="Redmi Note 8"
 export DEVICE
 CODENAME="ginkgo"
 export CODENAME
-KVERS="nenen"
+KVERS="Testing"
 export AVERS
 COMMIT_HASH=$(git log --oneline --pretty=tformat:"%h  %s  [%an]" --abbrev-commit --abbrev=1 -1)
 export COMMIT_HASH
@@ -139,23 +133,24 @@ compile() {
     make O=out ARCH="${ARCH}" "${DEFCONFIG}"
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
+       CC="clang" \
        READELF="llvm-readelf" \
        OBJSIZE="llvm-size" \
        OBJDUMP="llvm-objdump" \
        OBJCOPY="llvm-objcopy" \
        STRIP="llvm-strip" \
+       LD="LD=ld.lld" \
        NM="llvm-nm" \
        AR="llvm-ar" \
        HOSTAR="llvm-ar" \
        HOSTAS="llvm-as" \
        HOSTNM="llvm-nm" \
-       LD="ld.lld" \
        CLANG_TRIPLE="aarch64-linux-gnu-" \
        CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
        dtbo.img \
-       CC="${CCACHE} clang" \
+       dtb.img 2>&1 | tee log.txt
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
         finderr
@@ -165,6 +160,7 @@ compile() {
     git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
     cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
     cp out/arch/arm64/boot/dtbo.img AnyKernel
+    cp out/arch/arm64/boot/dtb.img AnyKernel
 }
 # Zipping
 zipping() {
