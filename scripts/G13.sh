@@ -3,6 +3,7 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
+
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -37,6 +38,17 @@ setup() {
           exit 1
       fi
   fi
+if [[ $1 = "-k" || $1 = "--ksu" ]]; then
+echo -e "\nCleanup KernelSU first on local build\n"
+rm -rf KernelSU drivers/kernelsu
+
+echo -e "\nKSU Support, let's Make it On\n"
+curl -kLSs "https://raw.githubusercontent.com/renzyprjkt/KernelSU-Next/legacy/kernel/setup.sh" | bash -s legacy
+
+sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/g' arch/arm64/configs/ginkgo_defconfig
+else
+echo -e "\nKSU not Support, let's Skip\n"
+fi
 }
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
 DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
@@ -50,7 +62,7 @@ export CACHE
 export KBUILD_COMPILER_STRING
 ARCH=arm64
 export ARCH
-export DEFCONFIG="vendor/ginkgo_defconfig"
+export DEFCONFIG="ginkgo_defconfig"
 export ARCH="arm64"
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
