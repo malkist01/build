@@ -3,7 +3,6 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-patch -p1 -F 3 < susfs-1.5.12.patch
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
