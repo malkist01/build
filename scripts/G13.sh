@@ -52,7 +52,6 @@ fi
 }
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
 DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
-DTB=$(pwd)/out/arch/arm64/boot/dtb.img
 DATE=$(date +"%Y%m%d-%H%M")
 START=$(date +"%s")
 KERNEL_DIR=$(pwd)
@@ -140,7 +139,6 @@ compile() {
     make O=out ARCH="${ARCH}" "${DEFCONFIG}"
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
-       CC="clang" \
        READELF="llvm-readelf" \
        OBJSIZE="llvm-size" \
        OBJDUMP="llvm-objdump" \
@@ -157,7 +155,6 @@ compile() {
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
        dtbo.img \
-       dtb.img \
        CC="${CCACHE} clang" \
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
@@ -168,7 +165,6 @@ compile() {
     git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
     cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
     cp out/arch/arm64/boot/dtbo.img AnyKernel
-    cp out/arch/arm64/boot/dtb.img AnyKernel
 }
 # Zipping
 zipping() {
