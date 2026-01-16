@@ -5,6 +5,7 @@ git clone $REPO -b $BRANCH kernel
 cd kernel
 curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s builtin
 patch -p1 < seccomp.patch
+patch -p1 < ksu.patch
 echo "CONFIG_KSU=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
 echo "CONFIG_KSU_MANUAL_SU=n" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
 echo "CONFIG_KPM=n" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
