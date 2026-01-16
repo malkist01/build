@@ -4,7 +4,6 @@ rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
 curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s builtin
-patch -p1 < seccomp.patch
 patch -p1 < ksu.patch
 echo "CONFIG_KSU=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
 echo "CONFIG_KSU_MANUAL_SU=n" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
@@ -151,7 +150,7 @@ compile() {
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
        dtbo.img \
-       dtb.img 2>&1 | tee log.txt
+       dtb.img \
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
         finderr
