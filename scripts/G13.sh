@@ -59,7 +59,7 @@ DEVICE="Redmi Note 8"
 export DEVICE
 CODENAME="ginkgo"
 export CODENAME
-KVERS="Testing"
+KVERS="nenen"
 export AVERS
 COMMIT_HASH=$(git log --oneline --pretty=tformat:"%h  %s  [%an]" --abbrev-commit --abbrev=1 -1)
 export COMMIT_HASH
