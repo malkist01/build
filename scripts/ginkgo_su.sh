@@ -3,7 +3,8 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-patch -p1 -F 3 < susfs-1.5.12.patch
+rm -rf KernelSU drivers/kernelsu
+curl -kLSs "https://raw.githubusercontent.com/renzyprjkt/SukiSU-Ultra/builtin/kernel/setup.sh" | bash -s builtin
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
