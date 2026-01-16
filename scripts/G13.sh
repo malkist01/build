@@ -1,11 +1,9 @@
-push
 #!/usr/bin/env bash
-
 # Dependencies
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-rm -rf KernelSU
+patch -p1 -F 3 < susfs-1.5.12.patch
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -43,7 +41,7 @@ setup() {
 }
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
 DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
-DTB=$(pwd)/out/arch/arm64/boot/dtb
+DTB=$(pwd)/out/arch/arm64/boot/dtb.img
 DATE=$(date +"%Y%m%d-%H%M")
 START=$(date +"%s")
 KERNEL_DIR=$(pwd)
@@ -62,7 +60,7 @@ DEVICE="Redmi Note 8"
 export DEVICE
 CODENAME="ginkgo"
 export CODENAME
-KVERS="Normal"
+KVERS="Testing"
 export AVERS
 COMMIT_HASH=$(git log --oneline --pretty=tformat:"%h  %s  [%an]" --abbrev-commit --abbrev=1 -1)
 export COMMIT_HASH
@@ -148,6 +146,7 @@ compile() {
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
        dtbo.img \
+       dtb.img \
        CC="${CCACHE} clang" \
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
@@ -158,7 +157,7 @@ compile() {
     git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
     cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
     cp out/arch/arm64/boot/dtbo.img AnyKernel
-    cp out/arch/arm64/boot/dtb AnyKernel
+    cp out/arch/arm64/boot/dtb.img AnyKernel
 }
 # Zipping
 zipping() {
