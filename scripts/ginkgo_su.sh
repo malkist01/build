@@ -136,6 +136,7 @@ compile() {
        OBJDUMP="llvm-objdump" \
        OBJCOPY="llvm-objcopy" \
        STRIP="llvm-strip" \
+       LD="LD=ld.lld" \
        NM="llvm-nm" \
        AR="llvm-ar" \
        HOSTAR="llvm-ar" \
@@ -146,8 +147,7 @@ compile() {
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
        dtbo.img \
-       dtb.img \
-       CC="${CCACHE} clang" \
+       dtb.img 2>&1 | tee log.txt
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
         finderr
