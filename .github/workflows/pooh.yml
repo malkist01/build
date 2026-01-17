@@ -1,4 +1,4 @@
-name: Ginkgo A13
+name: Pooh
 
 on:
   workflow_dispatch:
@@ -52,8 +52,8 @@ jobs:
       - name: Compiling
         run: |
           if [ "${DEVICE}" = "ginkgo" ]; then
-            wget https://raw.githubusercontent.com/malkist01/build/main/scripts/G13.sh
-            bash G13.sh
+            wget https://raw.githubusercontent.com/malkist01/build/main/scripts/pooh.sh
+            bash pooh.sh
           else
             echo "Device not supported yet"
           fi
