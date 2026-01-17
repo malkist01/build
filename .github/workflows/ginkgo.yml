@@ -52,8 +52,8 @@ jobs:
       - name: Compiling
         run: |
           if [ "${DEVICE}" = "ginkgo" ]; then
-            wget https://raw.githubusercontent.com/malkist01/build/main/scripts/ginkgo_su.sh
-            bash ginkgo_su.sh
+            wget https://raw.githubusercontent.com/malkist01/build/main/scripts/ginkgo.sh
+            bash ginkgo.sh
           else
             echo "Device not supported yet"
           fi
