@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
+
 # Dependencies
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash -s builtin
-patch -p1 < ksu.patch
-echo "CONFIG_KSU=y" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
-echo "CONFIG_KSU_MANUAL_SU=n" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
-echo "CONFIG_KPM=n" >> ./arch/arm64/configs/vendor/ginkgo_defconfig
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -42,6 +38,14 @@ setup() {
           exit 1
       fi
   fi
+  
+  if [[ $1 = "-11" || $1 = "--a11" ]]; then
+	echo -e "\nFix for Android Camera\n"
+sed -i 's/CONFIG_MSM_CAMERA_BOOTCLOCK_TIMESTAMP=y/#CONFIG_MSM_CAMERA_BOOTCLOCK_TIMESTAMP=is not set/g' arch/arm64/configs/vendor/ginkgo.defconfig
+else
+	echo -e "\nIt is not for A11, let's skip it\n"
+fi
+
 }
 IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
 DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
@@ -49,14 +53,11 @@ DTB=$(pwd)/out/arch/arm64/boot/dtb.img
 DATE=$(date +"%Y%m%d-%H%M")
 START=$(date +"%s")
 KERNEL_DIR=$(pwd)
-export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
-CACHE=1
-export CACHE
-export KBUILD_COMPILER_STRING
-ARCH=arm64
-export ARCH
-export DEFCONFIG="vendor/ginkgo_defconfig"
-export ARCH="arm64"
+export PATH="$CLANG_DIR/bin:$PATH"
+export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
+DEFCONFIG="vendor/trinket-perf_defconfig"
+BASE_FRAGMENT="vendor/xiaomi-trinket.config"
+DEVICE_FRAGMENT="vendor/ginkgo.config"
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
 export KBUILD_BUILD_VERSION="1"
@@ -64,7 +65,9 @@ DEVICE="Redmi Note 8"
 export DEVICE
 CODENAME="ginkgo"
 export CODENAME
-KVERS="Testing"
+KVERS="normal"
+export KVERS
+AVERS="(10)"
 export AVERS
 COMMIT_HASH=$(git log --oneline --pretty=tformat:"%h  %s  [%an]" --abbrev-commit --abbrev=1 -1)
 export COMMIT_HASH
@@ -95,13 +98,14 @@ tgs() {
 # Send Build Info
 sendinfo() {
     tg "
-• 🕊️Teletubiescompiler Action •
-* 💻 Building on*: \`Github actions\`
-* 📆 Date*: \`${DATE}\`
-* 📱Device*: \`${DEVICE} (${CODENAME})\`
-* 💼 Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
-* 🔗 Last Commit*: \`${COMMIT_HASH}\`
-* 🔨 Build Status*: \`${STATUS}\`"
+• IMcompiler Action •
+*Building on*: \`Github actions\`
+*Date*: \`${DATE}\`
+*Device*: \`${DEVICE} (${CODENAME})\`
+*Branch*: \`$(git rev-parse --abbrev-ref HEAD)\`
+*Compiler*: \`${KBUILD_COMPILER_STRING}\`
+*Last Commit*: \`${COMMIT_HASH}\`
+*Build Status*: \`${STATUS}\`"
 }
 
 # Push kernel to channel
@@ -130,27 +134,24 @@ compile() {
         rm -rf out && mkdir -p out
     fi
 
-    make O=out ARCH="${ARCH}" "${DEFCONFIG}"
+    make O=out ARCH=arm64 $DEFCONFIG $FRAGMENT $DEVICE_FRAGMENT
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
        CC="clang" \
-       READELF="llvm-readelf" \
-       OBJSIZE="llvm-size" \
-       OBJDUMP="llvm-objdump" \
-       OBJCOPY="llvm-objcopy" \
-       STRIP="llvm-strip" \
-       LD="LD=ld.lld" \
-       NM="llvm-nm" \
+       LD="ld.lld" \
        AR="llvm-ar" \
-       HOSTAR="llvm-ar" \
-       HOSTAS="llvm-as" \
-       HOSTNM="llvm-nm" \
+       AS="llvm-as" \
+       NM="llvm-nm" \
+       OBJCOPY="llvm-objcopy" \
+       OBJDUMP="llvm-objdump" \
+       STRIP="llvm-strip" \
        CLANG_TRIPLE="aarch64-linux-gnu-" \
        CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
        Image.gz-dtb \
        dtbo.img \
-       dtb.img \
+       dtbo.img \
+       CC="${CCACHE} clang" \
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
         finderr
