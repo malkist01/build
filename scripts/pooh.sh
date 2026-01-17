@@ -51,8 +51,10 @@ KERNEL_DIR=$(pwd)
 export PATH="$CLANG_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
 DEFCONFIG="vendor/trinket-perf_defconfig"
+GINKGO_FRAGMENT="vendor/ginkgo.config"
 BASE_FRAGMENT="vendor/xiaomi-trinket.config"
-DEVICE_FRAGMENT="vendor/ginkgo.config"
+DEVICE_FRAGMENT="vendor/unified.config"
+ROOT="sukisu.config"
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
 export LD_LIBRARY_PATH="$CLANG_DIR/lib:$LD_LIBRARY_PATH"
 export KBUILD_BUILD_VERSION="1"
@@ -129,7 +131,7 @@ compile() {
         rm -rf out && mkdir -p out
     fi
 
-    make O=out ARCH=arm64 $DEFCONFIG $FRAGMENT $DEVICE_FRAGMENT
+    make O=out ARCH=arm64 $DEFCONFIG $FRAGMENT $DEVICE_FRAGMENT $GINKGO_FRAGMENT $ROOT
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
        CC="clang" \
