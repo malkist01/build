@@ -2,6 +2,7 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
+patch -p1 < scope-min.patch
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
