@@ -4,6 +4,8 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
+curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash -s master
+patch -p1 -F 3 < scope-min.patch
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
