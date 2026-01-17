@@ -11,17 +11,12 @@ ARCH_DIR="${TC_DIR}/aarch64-linux-android-4.9"
 ARM_DIR="${TC_DIR}/arm-linux-androideabi-4.9"
 setup() {
   if ! [ -d "${CLANG_DIR}" ]; then
-      echo "Clang not found! Downloading Google prebuilt..."
-      mkdir -p "${CLANG_DIR}"
-      wget -q https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/4d2864f08ff2c290563fb903a5156e0504620bbe/clang-r563880c.tar.gz -O clang.tar.gz
-      if [ $? -ne 0 ]; then
-          echo "Download failed! Aborting..."
-          exit 1
-      fi
-        echo "Extracting clang to ${CLANG_DIR}..."
-      tar -xf clang.tar.gz -C "${CLANG_DIR}"
-    rm -f clang.tar.gz
-  fi
+echo "Clang not found! Cloning to ${TC_DIR}..."
+if ! git clone --depth=1 -b clang-21.0 https://gitlab.com/kutemeikito/rastamod69-clang ${CLANG_DIR}; then
+echo "Cloning failed! Aborting..."
+exit 1
+fi
+fi
 
   if ! [ -d "${ARCH_DIR}" ]; then
       echo "gcc not found! Cloning to ${ARCH_DIR}..."
@@ -145,9 +140,9 @@ compile() {
        OBJCOPY="llvm-objcopy" \
        OBJDUMP="llvm-objdump" \
        STRIP="llvm-strip" \
-       CLANG_TRIPLE="aarch64-linux-gnu-" \
-       CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
-       CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
+       CROSS_COMPILE=aarch64-linux-android- \
+	   CROSS_COMPILE_COMPAT=arm-linux-gnueabi- \
+	   CLANG_TRIPLE=aarch64-linux-gnu- \
        Image.gz-dtb \
        dtbo.img \
        dtbo.img \
