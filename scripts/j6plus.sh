@@ -2,7 +2,8 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
-patch -p1 -F 3 < scope-min.patch
+curl -LSs https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh | bash -s master
+patch -p1 -F 3 < a.patch
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
@@ -11,7 +12,7 @@ git clone --depth=1 https://github.com/KudProject/arm-linux-androideabi-4.9.git 
 if [ "$is_test" = true ]; then
      echo "Its alpha test build"
      unset chat_id
-     unset token
+     unset tokenh
      export chat_id=${my_id}
      export token=${nToken}
 else
