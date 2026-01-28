@@ -5,18 +5,15 @@ git clone $REPO -b $BRANCH kernel
 cd kernel
 git clone --depth=1 https://github.com/malkist01/patch
 curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/patch.sh" | bash -s main
-curl -LSs "https://raw.githubusercontent.com/rsuntk/KernelSU/main/kernel/setup.sh" | bash -s main
+curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/master/kernel/setup.sh" | bash
 make mrproper
 echo "# CONFIG_KPM is not set" >> ./arch/arm64/configs/mido_defconfig
 echo "CONFIG_KALLSYMS=y" >> ./arch/arm64/configs/mido_defconfig
 echo "CONFIG_KALLSYMS_ALL=y" >> ./arch/arm64/configs/mido_defconfig
 echo "CONFIG_LOCAL_VERSION=-Teletubies 🕊️" >> ./arch/arm64/configs/mido_defconfig
 echo "# CONFIG_LOCAL_VERSION_AUTO is not set" >> ./arch/arm64/configs/mido_defconfig
-echo "CONFIG_LINUX_COMPILE_BY=malkist" >> ./arch/arm64/configs/mido_defconfig
-echo "CONFIG_LINUX_COMPILE_HOST=hp jadul" >> ./arch/arm64/configs/mido_defconfig
 echo "Adding CONFIG_KSU.."
 echo "CONFIG_KSU=y" >> ./arch/arm64/configs/mido_defconfig
-echo "CONFIG_KSUSFS=y" >> ./arch/arm64/configs/mido_defconfig
 clang() {
     echo "Cloning clang"
     if [ ! -d "clang" ]; then
