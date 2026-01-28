@@ -3,7 +3,8 @@ rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
 curl https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh | bash
-patch -p1 < backport.patch
+git clone --depth=1 https://github.com/malkist01/patch
+curl -LSs "https://raw.githubusercontent.com/malkist01/patch/main/add/backport.sh" | bash -s main
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
