@@ -2,6 +2,7 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
+rm -rf KernelSU
 curl https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh | bash
 patch -p1 < ksu.patch
 echo "Nuke previous toolchains"
