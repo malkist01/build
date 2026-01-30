@@ -1,4 +1,4 @@
-name: j6plus arm ksu
+name: j4plus arm ksu
 
 on:
   workflow_dispatch:
