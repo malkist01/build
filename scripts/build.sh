@@ -136,7 +136,7 @@ compile() {
         rm -rf out && mkdir -p out
     fi
 
-    make O=out ARCH=arm64 $DEFCONFIG $FRAGMENT $DEVICE_FRAGMENT
+    make O=out ARCH=arm64 $DEFCONFIG $DEVICE_FRAGMENT
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
        CC="clang" \
