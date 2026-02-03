@@ -3,7 +3,15 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-sed -i 's/CONFIG_KSU_KPROBES_HOOK=n/CONFIG_LTO_CLANG=y/CONFIG_LTO_CLANG_THIN=y/CONFIG_HAVE_LTO_CLANG=y/CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y/CONFIG_MODVERSIONS=n CONFIG_KPROBES=n/CONFIG_TMPFS_XATTR=y/g' arch/arm64/configs/vendor/ginkgo.defconfig
+echo "CONFIG_KSU_KPROBES_HOOK=n" >> ./arch/arm64/configs/vendor/ginkgo.config
+echo "CONFIG_LTO_CLANG=y" >> ./arch/arm64/configs/vendor/ginkgo.config
+echo "CONFIG_LTO_CLANG_THIN=y" >> ./arch/arm64/configs/vendor/ginkgo.config
+echo "CONFIG_HAVE_LTO_CLANG=y" >> ./arch/arm64/configs/vendor/ginkgo.config
+echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> ./arch/arm64/configs/vendor/ginkgo.config
+echo "CONFIG_MODVERSIONS=n" >> ./arch/arm64/configs/vendor/ginkgo.config
+echo "CONFIG_KPROBES=n" >> ./arch/arm64/configs/vendor/ginkgo.config
+echo "CONFIG_KPROBES=n" >> ./arch/arm64/configs/vendor/ginkgo.config
+echo "CONFIG_TMPFS_XATTR=y" >> ./arch/arm64/configs/vendor/ginkgo.config
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -39,9 +47,9 @@ setup() {
       fi
   fi
 }
-IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
+IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz
 DTBO=$(pwd)/out/arch/arm64/boot/dtbo.img
-DTB=$(pwd)/out/arch/arm64/boot/dtb.img
+DTB=$(pwd)/out/arch/arm64/boot/dtb
 DATE=$(date +"%Y%m%d-%H%M")
 START=$(date +"%s")
 KERNEL_DIR=$(pwd)
@@ -146,8 +154,9 @@ compile() {
        CLANG_TRIPLE="aarch64-linux-gnu-" \
        CROSS_COMPILE="$ARCH_DIR/bin/aarch64-elf-" \
        CROSS_COMPILE_ARM32="$ARM_DIR/bin/arm-arm-eabi-" \
-       Image.gz-dtb \
+       Image.gz \
        dtbo.img \
+       dtbo \
        CC="${CCACHE} clang" \
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
@@ -156,9 +165,9 @@ compile() {
     fi
 
     git clone --depth=1 https://github.com/malkist01/AnyKernel2.git AnyKernel -b main
-    cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
+    cp out/arch/arm64/boot/Image.gz AnyKernel
     cp out/arch/arm64/boot/dtbo.img AnyKernel
-    cp out/arch/arm64/boot/dtb.img AnyKernel
+    cp out/arch/arm64/boot/dtb AnyKernel
 }
 # Zipping
 zipping() {
