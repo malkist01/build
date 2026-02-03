@@ -4,14 +4,6 @@ rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
 echo "CONFIG_KSU_KPROBES_HOOK=n" >> ./arch/arm64/configs/vendor/ginkgo.config
-echo "CONFIG_LTO_CLANG=y" >> ./arch/arm64/configs/vendor/ginkgo.config
-echo "CONFIG_LTO_CLANG_THIN=y" >> ./arch/arm64/configs/vendor/ginkgo.config
-echo "CONFIG_HAVE_LTO_CLANG=y" >> ./arch/arm64/configs/vendor/ginkgo.config
-echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> ./arch/arm64/configs/vendor/ginkgo.config
-echo "CONFIG_MODVERSIONS=n" >> ./arch/arm64/configs/vendor/ginkgo.config
-echo "CONFIG_KPROBES=n" >> ./arch/arm64/configs/vendor/ginkgo.config
-echo "CONFIG_KPROBES=n" >> ./arch/arm64/configs/vendor/ginkgo.config
-echo "CONFIG_TMPFS_XATTR=y" >> ./arch/arm64/configs/vendor/ginkgo.config
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
