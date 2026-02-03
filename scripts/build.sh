@@ -3,7 +3,9 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-echo "CONFIG_KSU_KPROBES_HOOK=n" >> ./arch/arm64/configs/vendor/ginkgo.config
+echo "CONFIG_KSU_KPROBES_HOOK=n" >> ./arch/arm64/configs/vendor/xiaomi-trinket.config
+echo "CONFIG_BUILD_ARM64_DT_OVERLAY=y" >> ./arch/arm64/configs/vendor/xiaomi-trinket.config
+echo "CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE=y" >> ./arch/arm64/configs/vendor/xiaomi-trinket.config
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -46,6 +48,7 @@ DATE=$(date +"%Y%m%d-%H%M")
 START=$(date +"%s")
 KERNEL_DIR=$(pwd)
 export PATH="$CLANG_DIR/bin:$ARCH_DIR/bin:$ARM_DIR/bin:$PATH"
+export CCACHE_EXEC=$(which ccache)
 CACHE=1
 export CACHE
 export KBUILD_COMPILER_STRING
@@ -72,7 +75,8 @@ STATUS=STABLE
 export STATUS
 source "${HOME}"/.bashrc && source "${HOME}"/.profile
 if [ $CACHE = 1 ]; then
-    ccache -M 2G
+     ccache --max-size=2G
+     ccache --set-config=compression=true
     export USE_CCACHE=1
 fi
 LC_ALL=C
@@ -128,10 +132,12 @@ compile() {
         rm -rf out && mkdir -p out
     fi
 
-    make O=out ARCH=arm64 $DEFCONFIG $DEVICE_FRAGMENT
+    make O=out ARCH=arm64 $DEFCONFIG $FRAGMENT $DEVICE_FRAGMENT
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
-       CC="clang" \
+       CC="ccache clang" \
+       LLVM=1 \
+       LLVM_IAS=1 \
        READELF="llvm-readelf" \
        OBJSIZE="llvm-size" \
        OBJDUMP="llvm-objdump" \
@@ -149,7 +155,6 @@ compile() {
        Image.gz \
        dtbo.img \
        dtbo \
-       CC="${CCACHE} clang" \
 
     if ! [ -f "${IMAGE}" && -f "${DTBO}" && -f "${DTB}"]; then
         finderr
