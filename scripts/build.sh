@@ -3,6 +3,9 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
+echo "CONFIG_KSU_KPROBES_HOOK=n" >> ./arch/arm64/configs/vendor/xiaomi-trinket.config
+echo "CONFIG_BUILD_ARM64_DT_OVERLAY=y" >> ./arch/arm64/configs/vendor/xiaomi-trinket.config
+echo "CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE=y" >> ./arch/arm64/configs/vendor/xiaomi-trinket.config
 LOCAL_DIR="$(pwd)/.."
 TC_DIR="${LOCAL_DIR}/toolchain"
 CLANG_DIR="${TC_DIR}/clang"
@@ -129,7 +132,7 @@ compile() {
         rm -rf out && mkdir -p out
     fi
 
-    make O=out ARCH=arm64 $DEFCONFIG $FRAGMENT $DEVICE_FRAGMENT
+    make O=out ARCH=arm64 $DEFCONFIG $BASE_FRAGMENT $DEVICE_FRAGMENT
     make -j"${PROCS}" O=out \
        ARCH="arm64" \
        CC="ccache clang" \
