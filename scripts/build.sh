@@ -3,7 +3,6 @@
 rm -rf kernel
 git clone $REPO -b $BRANCH kernel
 cd kernel
-echo "CONFIG_KSU_KPROBES_HOOK=n" >> ./arch/arm64/configs/vendor/xiaomi-trinket.config
 echo "CONFIG_BUILD_ARM64_DT_OVERLAY=y" >> ./arch/arm64/configs/vendor/xiaomi-trinket.config
 echo "CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE=y" >> ./arch/arm64/configs/vendor/xiaomi-trinket.config
 LOCAL_DIR="$(pwd)/.."
