@@ -30,7 +30,7 @@ on:
         type: string
       kernel-branch:
         description: 'Kernel-branch'
-        default: 'hookless'
+        default: 'experimental'
         required: true
         type: string
       kernel-config:
