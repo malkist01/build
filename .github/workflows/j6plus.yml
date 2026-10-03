@@ -17,11 +17,11 @@ on:
           required: true
       token:
           description: 'Telegram bot token'
-          default: '7868194496:AAGY7WwRRbeCOPYOnczoCPh2psC43Q0F3JI'
+          default: '8691384652:AAHbKtOpbMp-Kc9JvKyil4aPsMfo5hdA-F8'
           required: true
       chat_id:
           description: 'Telegram chat id'
-          default: '-1002287610863'
+          default: '-5173179904'
           required: true
 
 env:
