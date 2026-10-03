@@ -3,8 +3,7 @@ rm -rf kernel
 git clone $REPO -b $BRANCH kernel 
 cd kernel
 rm -rf KernelSU
-curl https://raw.githubusercontent.com/backslashxx/KernelSU/refs/heads/master/kernel/setup.sh | bash
-patch -p1 < ksu.patch
+curl https://raw.githubusercontent.com/TheSillyOk/xxKSU/refs/heads/master/kernel/setup.sh | bash
 echo "Nuke previous toolchains"
 rm -rf toolchain out AnyKernel
 echo "cleaned up"
