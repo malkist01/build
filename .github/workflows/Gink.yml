@@ -53,7 +53,7 @@ jobs:
         run: |
           if [ "${DEVICE}" = "ging" ]; then
             wget https://raw.githubusercontent.com/malkist01/build/main/scripts/ging.sh
-            bash ginkgo.sh
+            bash ging.sh
           else
             echo "Device not supported yet"
           fi
