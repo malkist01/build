@@ -51,7 +51,7 @@ jobs:
 
       - name: Compiling
         run: |
-          if [ "${DEVICE}" = "ging" ]; then
+          if [ "${DEVICE}" = "ginkgo" ]; then
             wget https://raw.githubusercontent.com/malkist01/build/main/scripts/ging.sh
             bash ging.sh
           else
