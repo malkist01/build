@@ -169,7 +169,7 @@ TERM=xterm
 KERVER=$(make -s kernelversion)
 
 # Set a commit head
-COMMIT_HEAD=$(git log --oneline -1)
+#COMMIT_HEAD=$(git log --oneline -1)
 
 # Set Date
 DATE=$(TZ=Asia/Jakarta date +"%Y%m%d-%T")
