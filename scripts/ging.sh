@@ -166,12 +166,7 @@ setup_kernelsu() {
     echo -e "Patching Kernel for KernelSU..."
 
     # Download and apply KernelSU setup script, capture errors
-    if ! curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash - 2> kernelsu_patch_error.log; then
-        tg "KernelSU patching failed! Check kernelsu_patch_error.log"
-        tgs "kernelsu_patch_error.log" "KernelSU patching error log"
-        exit 1  
-    fi
-
+    curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/kernel/setup.sh" | bash -s master
     # Force enable CONFIG_KSU if it's not already set or is set to 'n'
     sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/' arch/${ARCH}/configs/${DEFCONFIG}
     sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/' arch/${ARCH}/configs/${DEFCONFIG}
