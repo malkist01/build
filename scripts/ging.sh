@@ -55,15 +55,15 @@ KERNEL_DIR="$(pwd)"
 BASEDIR="$(basename "$KERNEL_DIR")"
 
 # PATCH KERNELSU & RELEASE VERSION
-KSU=1
-RELEASE=I
-if [ $KSU = 1 ]
-then
-	echo "CONFIG_KSU=y" >> arch/arm64/configs/vendor/"ginkgo.defconfig"
+#KSU=1
+#RELEASE=I
+#if [ $KSU = 1 ]
+#then
+	#echo "CONFIG_KSU=y" >> arch/arm64/configs/vendor/"ginkgo.defconfig"
 	#echo "# CONFIG_KSU_DEBUG is not set" >> arch/arm64/configs/vendor/"fog-perf_defconfig"
 	#echo "CONFIG_KSU_SUSFS=y" >> arch/arm64/configs/vendor/"fog-perf_defconfig"
-	KERNELSU_VERSION=$(git log --oneline KernelSU | head -n 1)
-fi
+	#KERNELSU_VERSION=$(git log --oneline KernelSU | head -n 1)
+#fi
 
 # Banner overwrite ( for kernel installation branding )
 # 1 = yes | 0 = no
