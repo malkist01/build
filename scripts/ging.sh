@@ -1,445 +1,206 @@
-#!/bin/bash
-# shellcheck disable=SC2154
+#!/usr/bin/env bash
 
- # Script For Building Android arm64 Kernel
- #
- # Copyright (c) 2018-2021 Panchajanya1999 <rsk52959@gmail.com>
- #
- # Licensed under the Apache License, Version 2.0 (the "License");
- # you may not use this file except in compliance with the License.
- # You may obtain a copy of the License at
- #
- #      http://www.apache.org/licenses/LICENSE-2.0
- #
- # Unless required by applicable law or agreed to in writing, software
- # distributed under the License is distributed on an "AS IS" BASIS,
- # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- # See the License for the specific language governing permissions and
- # limitations under the License.
- #
+# Konfigurasikan 
+git config --global user.name "user.build"
+git config --global user.email "user@soulvibe.atlassian.net"
+df -h
+ld --version
+gcc -v
+ar --version
+sudo apt update
+sudo apt upgrade -y
+sudo apt install -y bc bison build-essential ccache curl flex glibc-source g++-multilib gcc-multilib binutils-aarch64-linux-gnu git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libwxgtk3.0-gtk3-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python2 tmate ssh lld neofetch
+neofetch
 
-# Kernel building script
-WORKDIR="$(pwd)"
-KERNEL="$WORKDIR/rystx"
+# Hapus folder kernel yang ada (jika ada)
+if [ -d "kernel" ]; then
+    echo "Menghapus folder kernel yang ada..."
+    rm -rf kernel
+fi
 
-# Cloning Sources
-git clone --single-branch --depth=1 https://github.com/malkist01/android_kernel_xiaomi_sm6125 -b lineage-24.0 $KERNEL && cd $KERNEL
-cd $KERNEL
-export LOCALVERSION="-イデッドx1"
+# Clone repositori kernel (jika belum ada)
+if [ ! -d "kernel" ]; then
+    echo "Mengkloning repositori kernel..."
+    git clone --single-branch --depth=1 https://github.com/malkist01/android_kernel_xiaomi_sm6125 -b lineage-24.0 kernel
+else
+    echo "Folder kernel sudah ada, tidak perlu mengkloning ulang."
+fi
 
-# Bail out if script fails
-set -e
+cd kernel 
 
-# Function to show an informational message
-msger()
-{
-	while getopts ":n:e:" opt
-	do
-		case "${opt}" in
-			n) printf "[*] $2 \n" ;;
-			e) printf "[×] $2 \n"; return 1 ;;
-		esac
-	done
+clang() {
+    rm -rf clang
+    echo "Cloning clang"
+    if [ ! -d "clang" ]; then
+        git clone -q https://gitlab.com/PixelOS-Devices/playgroundtc.git --depth=1 -b 17 clang
+        KBUILD_COMPILER_STRING="Playground clang 17.0"
+        export PATH="${PWD}/clang/bin:${PATH}"  # Add clang bin to PATH for current shell
+    fi
+    sudo apt install -y ccache
+    echo "Done"
 }
 
-cdir()
-{
-	cd "$1" 2>/dev/null || msger -e "The directory $1 doesn't exists !"
-}
-
-##------------------------------------------------------##
-##----------Basic Informations, COMPULSORY--------------##
-
-# The defult directory where the kernel should be placed
-KERNEL_DIR="$(pwd)"
-BASEDIR="$(basename "$KERNEL_DIR")"
-
-# PATCH KERNELSU & RELEASE VERSION
-#KSU=1
-#RELEASE=I
-#if [ $KSU = 1 ]
-#then
-	#echo "CONFIG_KSU=y" >> arch/arm64/configs/vendor/"ginkgo.defconfig"
-	#echo "# CONFIG_KSU_DEBUG is not set" >> arch/arm64/configs/vendor/"fog-perf_defconfig"
-	#echo "CONFIG_KSU_SUSFS=y" >> arch/arm64/configs/vendor/"fog-perf_defconfig"
-	#KERNELSU_VERSION=$(git log --oneline KernelSU | head -n 1)
-#fi
-
-# Banner overwrite ( for kernel installation branding )
-# 1 = yes | 0 = no
-BANNER_OVERWRITE=0
-
-# The name of the Kernel, to name the ZIP
-ZIPNAME="rystX"
-VER="$RELEASE"
-KERNVER="イデッド"
-
-# Build Author
-# Take care, it should be a universal and most probably, case-sensitive
-AUTHOR="idead"
-HOSTR="rystx-cachyos"
-
-# Architecture
+IMAGE=$(pwd)/out/arch/arm64/boot/Image.gz-dtb
+IMAGE2=$(pwd)/out/arch/arm64/boot/dtbo.img
+DATE=$(date +"%Y%m%d-%H%M")
+START=$(date +"%s")
+KERNEL_DIR=$(pwd)
+CACHE=1
+token=8691384652:AAHbKtOpbMp-Kc9JvKyil4aPsMfo5hdA-F8
+chat_id=-5173179904
+export token
+export chat_id
+RELEASE_VER=$(git rev-parse --abbrev-ref HEAD)
+export RELEASE_VER
+export CACHE
+export KBUILD_COMPILER_STRING
 ARCH=arm64
-
-# The name of the device for which the kernel is built
-MODEL="Redmi Note 8"
-
-# The codename of the device
-DEVICE="ginkgo"
-
-# The defconfig which should be used. Get it from config.gz from
-# your device or check source
-DEFCONFIG=vendor/trinket-perf_defconfig
-CONFIG=vendor/xiaomi-trinket.config
-CON=vendor/ginkgo.config
-
-# Specify compiler.
-# 'clang' or 'gcc'
-COMPILER=clang
-
-# Build modules. 0 = NO | 1 = YES
-MODULES=0
-
-# Specify linker.
-# 'ld.lld'(default)
-LINKER=ld.lld
-
-# Clean source prior building. 1 is NO(default) | 0 is YES
-INCREMENTAL=0
-
-# Push ZIP to Telegram. 1 is YES | 0 is NO(default)
-PTTG=1
-if [ $PTTG = 1 ]
-then
-	# Set Telegram Chat ID
-	CHATID="-5173179904"
-	TOKEN="8691384652:AAHbKtOpbMp-Kc9JvKyil4aPsMfo5hdA-F8"
+export ARCH
+KBUILD_BUILD_HOST="soulvibe-atlassian"
+export KBUILD_BUILD_HOST
+KBUILD_BUILD_USER="user"
+export KBUILD_BUILD_USER
+DEVICE="Xiaomi Redmi Note 8"
+export DEVICE
+CODENAME="ginkgo"
+export CODENAME
+DEFCONFIG="vendor/trinket-perf_defconfig"
+export DEFCONFIG
+CONFIG="vendor/xiaomi-trinket.config"
+export CONFIG
+CONF="vendor/ginkgo.config"
+export CONF
+COMMIT_HASH=$(git rev-parse --short HEAD)
+export COMMIT_HASH
+PROCS=$(nproc --all)
+export PROCS
+STATUS=TEST
+export STATUS
+source "$HOME"/.bashrc && source "$HOME"/.profile
+if [[ $CACHE -eq 1 ]]; then
+    ccache -M 130G
+    export USE_CCACHE=1
 fi
+LC_ALL=C
+export LC_ALL
 
-# Generate a full DEFCONFIG prior building. 1 is YES | 0 is NO(default)
-DEF_REG=0
-
-# Files/artifacts
-FILES=Image.gz
-
-# Build dtbo.img (select this only if your source has support to building dtbo.img)
-# 1 is YES | 0 is NO(default)
-BUILD_DTBO=1
-
-# Sign the zipfile
-# 1 is YES | 0 is NO
-SIGN=0
-if [ $SIGN = 1 ]
-then
-	#Check for java
-	if ! hash java 2>/dev/null 2>&1; then
-		SIGN=0
-		msger -n "you may need to install java, if you wanna have Signing enabled"
-	else
-		SIGN=1
-	fi
-fi
-
-# Silence the compilation
-# 1 is YES(default) | 0 is NO
-SILENCE=0
-
-# Verbose build
-# 0 is Quiet(default)) | 1 is verbose | 2 gives reason for rebuilding targets
-VERBOSE=0
-
-# Debug purpose. Send logs on every successfull builds
-# 1 is YES | 0 is NO(default)
-LOG_DEBUG=0
-
-##------------------------------------------------------##
-##---------Do Not Touch Anything Beyond This------------##
-
-# Check if we are using a dedicated CI ( Continuous Integration ), and
-# set KBUILD_BUILD_VERSION and KBUILD_BUILD_HOST and CI_BRANCH
-
-## Set defaults first
-
-# shellcheck source=/etc/os-release
-export DISTRO=$(source /etc/os-release && echo "${NAME}")
-export KBUILD_BUILD_HOST=$(uname -a | awk '{print $2}')
-TERM=xterm
-
-#Check Kernel Version
-KERVER=$(make -s kernelversion)
-
-# Set a commit head
-#COMMIT_HEAD=$(git log --oneline -1)
-
-# Set Date
-DATE=$(TZ=Asia/Jakarta date +"%Y%m%d-%T")
-WAKTU=$(date +"%F-%S")
-
-#Now Its time for other stuffs like cloning, exporting, etc
-
-do_install_pkg(){
-	sudo apt update -y
-	sudo apt upgrade -y
-	sudo apt install python3 cpio bc  flex -y
+tg() { # Mengirim pesan teks ke Telegram
+    curl -sX POST "https://api.telegram.org/bot${token}/sendMessage" \
+        -d chat_id="${chat_id}" \
+        -d parse_mode=Markdown \
+        -d disable_web_page_preview=true \
+        -d text="$1" &>/dev/null
 }
 
- clone()
- {
-	echo " "
-	if [ $COMPILER = "gcc" ]
-	then
-		msger -n "|| Cloning GCC 9.3.0 baremetal ||"
-		git clone --depth=1 https://github.com/mvaisakh/gcc-arm64.git gcc64
-		git clone --depth=1 https://github.com/arter97/arm32-gcc.git gcc32
-		GCC64_DIR=$KERNEL_DIR/gcc64
-		GCC32_DIR=$KERNEL_DIR/gcc32
-	fi
-
-	if [ $COMPILER = "clang" ]
-	then
-		if [ ! -d "clang-llvm" ]; then
-			mkdir clang-llvm
-		fi
-
-		if [ ! -f "rvclang.tar.gz" ]; then
-        	wget https://github.com/Rv-Project/RvClang/releases/download/20.1.1/RvClang-20.1.1-bolt-pgo-full_lto.tar.gz -O "rvclang.tar.gz"
-         	tar -xf rvclang.tar.gz -C clang-llvm
-		fi
-
-		# if [ ! -d "aarch64-linux-android-4.9" ]; then
-		# 	git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 aarch64-linux-android-4.9 --depth=1
-		# fi
-
-#		GCC64_DIR=$KERNEL_DIR/gcc64
-#		GCC32_DIR=$KERNEL_DIR/gcc32
-#  		for64=aarch64-zyc-linux-gnu
-#  		for32=arm-zyc-linux-gnueabi
-		# Toolchain Directory defaults to clang-llvm
-		TC_DIR=$KERNEL_DIR/clang-llvm/RvClang
-		export CC="ccache clang"
-		export CXX="ccache clang++"
-		export HOSTCC="$CC"
-		export HOSTCXX="$CXX"
-	fi
-
-	if [ ! -d "AnyKernel3" ]; then
-		msger -n "|| Cloning Anykernel ||"
-		git clone --depth=1 https://github.com/malkist01/AnyKernel3 -b ginkgo AnyKernel3
-	fi
-
-	if [ $BUILD_DTBO = 1 ]
-	then
-		msger -n "|| Cloning libufdt ||"
-		git clone https://android.googlesource.com/platform/system/libufdt "$KERNEL_DIR"/scripts/ufdt/libufdt
-	fi
+tgs() { # Mengirim file ke Telegram
+    MD5=$(md5sum "$1" | cut -d' ' -f1)
+    curl -fsSL -X POST -F document=@"$1" "https://api.telegram.org/bot${token}/sendDocument" \
+        -F "chat_id=${chat_id}" \
+        -F "parse_mode=Markdown" \
+        -F "caption=$2 | *MD5*: \`$MD5\`"
 }
 
-##------------------------------------------------------##
+# Send Build Info
+sendinfo() {
+    NEOFETCH_OUTPUT=$(neofetch --stdout) 
+    tg "
+• *SOULVIBE BUILDER BOT* •
 
-exports()
-{
-	KBUILD_BUILD_USER=$AUTHOR
-	KBUILD_BUILD_HOST=$HOSTR
-	SUBARCH=$ARCH
-	CUSTOMSTR="[$KERNVER] rystX OpenSource //"
-
-	if [ $COMPILER = "clang" ]
-	then
-		KBUILD_COMPILER_STRING=$("$TC_DIR"/bin/clang --version | head -n 1 | perl -pe 's/\(http.*?\)//gs' | sed -e 's/  */ /g' -e 's/[[:space:]]*$//')
-		PATH=$TC_DIR/bin/:$PATH
-	elif [ $COMPILER = "gcc" ]
-	then
-		KBUILD_COMPILER_STRING=$("$GCC64_DIR"/bin/aarch64-elf-gcc --version | head -n 1)
-		PATH=$GCC64_DIR/bin/:$GCC32_DIR/bin/:/usr/bin:$PATH
-	fi
-
-	BOT_MSG_URL="https://api.telegram.org/bot$TOKEN/sendMessage"
-	BOT_BUILD_URL="https://api.telegram.org/bot$TOKEN/sendDocument"
-	PROCS=$(nproc --all)
-	GIT_CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
-
-	export KBUILD_BUILD_USER ARCH SUBARCH PATH \
-	       KBUILD_COMPILER_STRING BOT_MSG_URL \
-	       BOT_BUILD_URL PROCS CUSTOMSTR \
-		   GIT_CURRENT_BRANCH
+*Building on*: \`Soulvibe Server\`
+*Date*: \`${DATE}\`
+*Device*: \`${DEVICE} (${CODENAME})\`
+*Branch*: \`$RELEASE_VER\`  
+*Last Commit*: [${COMMIT_HASH}](https://github.com/malkist01/android_kernel_xiaomi_sm6125/commit/${COMMIT_HASH})
+*Compiler*: \`${KBUILD_COMPILER_STRING}\`
+*Build Status*: \`${STATUS}\`
+*System Info*:
+\`\`\`
+${NEOFETCH_OUTPUT}
+\`\`\`
+"
 }
 
-##---------------------------------------------------------##
-
-tg_post_msg()
-{
-	curl -s -H "Content-Type: application/x-www-form-urlencoded" -X POST "$BOT_MSG_URL" -d chat_id="$CHATID" \
-	-d "disable_web_page_preview=true" \
-	-d "parse_mode=html" \
-	-d text="$1"
-
+# Push kernel to channel
+push() {
+    cd AnyKernel || exit 1
+    ZIP=$(echo *.zip)
+    tgs "${ZIP}" "Build took $((DIFF / 60)) minute(s) and $((DIFF % 60)) second(s). | For *${DEVICE} (${CODENAME})* | ${TIME}"
 }
 
-##----------------------------------------------------------##
-
-tg_post_build()
-{
-	# Post MD5Checksum alongwith for easeness
-	MD5CHECK=$(md5sum "$1" | cut -d' ' -f1)
-
-	# Show the Checksum alongwith caption
-	curl --progress-bar -F document=@"$1" "$BOT_BUILD_URL" \
-	-F chat_id="$CHATID"  \
-	-F "disable_web_page_preview=true" \
-	-F "parse_mode=Markdown" \
-	-F caption="$2 | *MD5 Checksum : *\`$MD5CHECK\`"
+# Catch Error
+finderr() {
+    curl -s -X POST "https://api.telegram.org/bot$token/sendMessage" \
+        -d chat_id="$chat_id" \
+        -d "disable_web_page_preview=true" \
+        -d "parse_mode=markdown" \
+        -d sticker="CAACAgIAAxkBAAED3JViAplqY4fom_JEexpe31DcwVZ4ogAC1BAAAiHvsEs7bOVKQsl_OiME" \
+        -d text="Build throw an error(s)"
+    error_sticker
+    exit 1
 }
 
-##----------------------------------------------------------##
+setup_kernelsu() {
+    echo -e "Patching Kernel for KernelSU..."
 
-build_kernel()
-{
-	if [ $INCREMENTAL = 0 ]
-	then
-		msger -n "|| Cleaning Sources ||"
-		make mrproper && rm -rf out
-	fi
-
-	if [ "$KSU" = 1 ]
- 	then
-		tg_post_msg "<b>rystX CI Build Triggered</b>%0A<b>OS: </b><code>$DISTRO</code>%0A<b>Kernel Version : </b><code>$KERVER</code>%0A<b>Date : </b><code>$(TZ=Asia/Jakarta date)</code>%0A<b>Device : </b><code>$MODEL [$DEVICE]</code>%0A<b>Worktree : </b><code>$WORKDIR | $GIT_CURRENT_BRANCH</code>%0A<b>Compiler Used : </b><code>$KBUILD_COMPILER_STRING</code>%0A<b>KernelSU: </b><code>$KERNELSU_VERSION</code>%0A<b>Top Commit : </b><code>$COMMIT_HEAD</code>"
-	else
-		tg_post_msg "<b>rystX CI Build Triggered</b>%0A<b>OS: </b><code>$DISTRO</code>%0A<b>Kernel Version : </b><code>$KERVER</code>%0A<b>Date : </b><code>$(TZ=Asia/Jakarta date)</code>%0A<b>Device : </b><code>$MODEL [$DEVICE]</code>%0A<b>Worktree : </b><code>$WORKDIR | $GIT_CURRENT_BRANCH</code>%0A<b>Compiler Used : </b><code>$KBUILD_COMPILER_STRING</code>%0A<b>NON KernelSU:<code>This is not KSU</code>%0A</b><b>Top Commit : </b><code>$COMMIT_HEAD</code>"
+    # Download and apply KernelSU setup script, capture errors
+    if ! curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash - 2> kernelsu_patch_error.log; then
+        tg "KernelSU patching failed! Check kernelsu_patch_error.log"
+        tgs "kernelsu_patch_error.log" "KernelSU patching error log"
+        exit 1  
     fi
 
-	make O=out $DEFCONFIG $CONFIG $CON
-	if [ $DEF_REG = 1 ]
-	then
-		cp .config arch/arm64/configs/$DEFCONFIG $CONFIG
-		git add arch/arm64/configs/$DEFCONFIG $CONFIG
-		git commit -m "$DEFCONFIG $CONFIG: Regenerate
-
-						This is an auto-generated commit"
-	fi
-
-	BUILD_START=$(date +"%s")
-	if [ $COMPILER = "clang" ]
-	then
-		MAKE+=(
-			LLVM=1 \
-			LLVM_IAS=1 \
-			CROSS_COMPILE=aarch64-linux-gnu- \
-			CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
-		)
-	elif [ $COMPILER = "gcc" ]
-	then
-		MAKE+=(
-			CROSS_COMPILE_ARM32=arm-eabi- \
-			CROSS_COMPILE=aarch64-elf- \
-			AR=aarch64-elf-ar \
-			OBJDUMP=aarch64-elf-objdump \
-			STRIP=aarch64-elf-strip \
-			NM=aarch64-elf-nm \
-			OBJCOPY=aarch64-elf-objcopy \
-			LD=aarch64-elf-$LINKER
-		)
-	fi
-
-	if [ $SILENCE = "1" ]
-	then
-		MAKE+=( -s )
-	fi
-
-	msger -n "|| Started Compilation ||"
-	make -kj"$PROCS" O=out \
-		V=$VERBOSE \
-		"${MAKE[@]}" 2>&1 | tee error.log
-	if [ $MODULES = "1" ]
-	then
-	    msger -n "|| Started Compiling Modules ||"
-	    make -j"$PROCS" O=out \
-		 "${MAKE[@]}" modules_prepare
-	    make -j"$PROCS" O=out \
-		 "${MAKE[@]}" modules INSTALL_MOD_PATH="$KERNEL_DIR"/out/modules
-	    make -j"$PROCS" O=out \
-		 "${MAKE[@]}" modules_install INSTALL_MOD_PATH="$KERNEL_DIR"/out/modules
-	    find "$KERNEL_DIR"/out/modules -type f -iname '*.ko' -exec cp {} AnyKernel3/modules/system/lib/modules/ \;
-	fi
-
-		BUILD_END=$(date +"%s")
-		DIFF=$((BUILD_END - BUILD_START))
-
-		if [ -f "$KERNEL_DIR"/out/arch/arm64/boot/$FILES ]
-		then
-			msger -n "|| Kernel successfully compiled ||"
-			if [ $BUILD_DTBO = 1 ]
-			then
-				msger -n "|| Building DTBO ||"
-				tg_post_msg "<code>Building DTBO..</code>"
-				DTBO_PATH="xiaomi/ginkgo-trinket-overlay.dtbo"
-				python3 "$KERNEL_DIR/scripts/ufdt/libufdt/utils/src/mkdtboimg.py" \
-					create "$KERNEL_DIR/out/arch/arm64/boot/dtbo.img" --page_size=4096 "$KERNEL_DIR/out/arch/arm64/boot/dts/$DTBO_PATH"
-			fi
-				gen_zip
-			else
-			if [ "$PTTG" = 1 ]
- 			then
-				tg_post_build "error.log" "*Build failed to compile after $((DIFF / 60)) minute(s) and $((DIFF % 60)) seconds*"
-			fi
-		fi
-
+    # Force enable CONFIG_KSU if it's not already set or is set to 'n'
+    sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/' arch/${ARCH}/configs/${DEFCONFIG}
+    sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/' arch/${ARCH}/configs/${DEFCONFIG}
 }
 
-##--------------------------------------------------------------##
+# Compile
+compile() {
 
-gen_zip()
-{
-	cd $KERNEL
-	msger -n "|| Zipping into a flashable zip ||"
-	mv "$KERNEL_DIR"/out/arch/arm64/boot/$FILES AnyKernel3/$FILES
-	if [ $BUILD_DTBO = 1 ]
-	then
-		mv "$KERNEL_DIR"/out/arch/arm64/boot/dtbo.img AnyKernel3/dtbo.img
-	fi
+    rm -rf out && mkdir -p out
+    sed -i 's/^CONFIG_LOCALVERSION=".*"/CONFIG_LOCALVERSION="-ParadoX:[Hera!]"/' arch/arm64/configs/$DEFCONFIG
 
-    if [ $BANNER_OVERWRITE = 1 ]; then
-        echo "|| Waiting for new 'banner' file save... ||"
-        code banner --wait
-        mv banner AnyKernel3/banner
-        echo "|| Banner saved ||"
+    make O=out ARCH="${ARCH}" "$DEFCONFIG" "$CONFIG" "$CONF"
+    make -j"${PROCS}" O=out \
+        ARCH=arm64 \
+        LLVM=1 \
+        LLVM_IAS=1 \
+        AR=llvm-ar \
+        NM=llvm-nm \
+        LD=ld.lld \
+        OBJCOPY=llvm-objcopy \
+        OBJDUMP=llvm-objdump \
+        STRIP=llvm-strip \
+        CC=clang \
+        CROSS_COMPILE=aarch64-linux-gnu- \
+        CROSS_COMPILE_ARM32=arm-linux-gnueabi 2> compile_error.log || {
+            tg "Kernel compilation failed! Check compile_error.log"
+            tgs "compile_error.log" "Kernel compilation error log" 
+            exit 1 
+        }
+    if ! [ -a "$IMAGE" ]; then
+        finderr
+        exit 1
     fi
 
-	cdir AnyKernel3
-
-	## Prepare a final zip variable
-	ZIP_FINAL="$ZIPNAME-$DEVICE-$VER-$WAKTU"
-	zip -r "$ZIP_FINAL.zip" . -x ".git*" -x "README.md" -x "*.zip"
-
-
-	if [ $SIGN = 1 ]
-	then
-		## Sign the zip before sending it to telegram
-		if [ "$PTTG" = 1 ]
- 		then
- 			msger -n "|| Signing Zip ||"
-			tg_post_msg "<code>Signing Zip file with AOSP keys..</code>"
- 		fi
-		curl -sLo zipsigner-3.0.jar https://github.com/Magisk-Modules-Repo/zipsigner/raw/master/bin/zipsigner-3.0-dexed.jar
-		java -jar zipsigner-3.0.jar "$ZIP_FINAL".zip "$ZIP_FINAL"-signed.zip
-		ZIP_FINAL="$ZIP_FINAL-signed"
-	fi
-
-	if [ "$PTTG" = 1 ]
- 	then
-		tg_post_build "$ZIP_FINAL.zip" "Build took : $((DIFF / 60)) minute(s) and $((DIFF % 60)) second(s)"
-	fi
-	cd ..
+    git clone --depth=1 -b ginkgo https://github.com/malkist01/Anykernel3.git AnyKernel 
+    cp out/arch/arm64/boot/Image.gz-dtb AnyKernel
+    cp out/arch/arm64/boot/dtbo.img AnyKernel
+    cp out/arch/arm64/boot/dtb.img AnyKernel
 }
 
-do_install_pkg
-clone
-exports
-build_kernel
+# Zipping
+zipping() {
+    cd AnyKernel || exit 1
+    zip -r9 "ParadoX:[Hera!]-${RELEASE_VER}-${CODENAME}-${DATE}-KSU.zip" ./*
+    cd ..
+}
 
-if [ $LOG_DEBUG = "1" ]
-then
-	tg_post_build "error.log" "$CHATID" "Debug Mode Logs"
-fi
-
-##----------------*****-----------------------------##
+clang
+sendinfo
+setup_kernelsu
+compile
+zipping
+END=$(date +"%s")
+DIFF=$((END - START))
+push
