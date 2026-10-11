@@ -91,7 +91,8 @@ DEVICE="ginkgo"
 # The defconfig which should be used. Get it from config.gz from
 # your device or check source
 DEFCONFIG=vendor/trinket-perf_defconfig
-CONFIG=vendor/xiaomi-trinket.config vendor/ginkgo.config
+CONFIG=vendor/xiaomi-trinket.config
+CON=vendor/ginkgo.config
 
 # Specify compiler.
 # 'clang' or 'gcc'
@@ -307,7 +308,7 @@ build_kernel()
 		tg_post_msg "<b>rystX CI Build Triggered</b>%0A<b>OS: </b><code>$DISTRO</code>%0A<b>Kernel Version : </b><code>$KERVER</code>%0A<b>Date : </b><code>$(TZ=Asia/Jakarta date)</code>%0A<b>Device : </b><code>$MODEL [$DEVICE]</code>%0A<b>Worktree : </b><code>$WORKDIR | $GIT_CURRENT_BRANCH</code>%0A<b>Compiler Used : </b><code>$KBUILD_COMPILER_STRING</code>%0A<b>NON KernelSU:<code>This is not KSU</code>%0A</b><b>Top Commit : </b><code>$COMMIT_HEAD</code>"
     fi
 
-	make O=out $DEFCONFIG $CONFIG
+	make O=out $DEFCONFIG $CONFIG $CON
 	if [ $DEF_REG = 1 ]
 	then
 		cp .config arch/arm64/configs/$DEFCONFIG $CONFIG
