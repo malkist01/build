@@ -7,10 +7,33 @@ df -h
 ld --version
 gcc -v
 ar --version
-sudo apt update
-sudo apt upgrade -y
-sudo apt install -y bc bison build-essential ccache curl flex glibc-source g++-multilib gcc-multilib binutils-aarch64-linux-gnu git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libwxgtk3.0-gtk3-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python2 tmate ssh lld neofetch
-neofetch
+sudo apt-get update -qq
+sudo apt-get install -y --no-install-recommends
+python3-pip
+git
+zip
+unzip
+gcc
+g++
+make
+ninja-build
+file
+bc
+bison
+flex
+libfl-dev
+libssl-dev
+libelf-dev
+wget
+build-essential
+python3-dev
+python3-setuptools
+rsync
+ccache
+llvm-dev
+libncurses6
+libfdt-dev
+binwalk
 
 # Hapus folder kernel yang ada (jika ada)
 if [ -d "kernel" ]; then
