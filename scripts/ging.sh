@@ -168,7 +168,7 @@ setup_kernelsu() {
     # Download and apply KernelSU setup script, capture errors
     curl -LSs "https://raw.githubusercontent.com/backslashxx/KernelSU/kernel/setup.sh" | bash -s master
     # Force enable CONFIG_KSU if it's not already set or is set to 'n'
-    sed -i 's/# CONFIG_KSU is not set/CONFIG_KSU=y/' arch/${ARCH}/configs/${DEFCONFIG}
+    sed -i 's/# CONFIG_KSU_TAMPER_SYSCALL_TABLE is not set/CONFIG_KSU_TAMPER_SYSCALL_TABLE=y/' arch/${ARCH}/configs/${DEFCONFIG}
     sed -i 's/CONFIG_KSU=n/CONFIG_KSU=y/' arch/${ARCH}/configs/${DEFCONFIG}
 }
 
@@ -176,7 +176,6 @@ setup_kernelsu() {
 compile() {
 
     rm -rf out && mkdir -p out
-    sed -i 's/^CONFIG_LOCALVERSION=".*"/CONFIG_LOCALVERSION="-ParadoX:[Hera!]"/' arch/arm64/configs/$DEFCONFIG
 
     make O=out ARCH="${ARCH}" "$DEFCONFIG" "$CONFIG" "$CONF"
     make -j"${PROCS}" O=out \
