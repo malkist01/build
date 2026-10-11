@@ -23,7 +23,7 @@ WORKDIR="$(pwd)"
 KERNEL="$WORKDIR/rystx"
 
 # Cloning Sources
-#git clone --single-branch --depth=1 https://github.com/malkist01/android_kernel_xiaomi_sm6125 -b lineage-24.0 $KERNEL && cd $KERNEL
+git clone --single-branch --depth=1 https://github.com/malkist01/android_kernel_xiaomi_sm6125 -b lineage-24.0 $KERNEL && cd $KERNEL
 cd $KERNEL
 export LOCALVERSION="-イデッドx1"
 
