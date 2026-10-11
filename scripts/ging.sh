@@ -3,10 +3,6 @@
 # Konfigurasikan 
 git config --global user.name "user.build"
 git config --global user.email "user@soulvibe.atlassian.net"
-df -h
-ld --version
-gcc -v
-ar --version
 sudo apt-get update -qq
 sudo apt-get install -y --no-install-recommends
 python3-pip
@@ -34,6 +30,10 @@ llvm-dev
 libncurses6
 libfdt-dev
 binwalk
+df -h
+ld --version
+gcc -v
+ar --version
 
 # Hapus folder kernel yang ada (jika ada)
 if [ -d "kernel" ]; then
